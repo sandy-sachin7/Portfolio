@@ -68,7 +68,8 @@ export const STARTER_QUERIES: StarterQuery[] = [
     query: 'SHOW beliefs ORDER BY date DESC',
     label: 'What you believe',
     why: 'Opinions with evidence links and strength. Newest first.',
-    expectedCount: 6,
+    expectedCount: 3,
+    note: '3 asserted beliefs presentable by default; 3 inferred (needs_check) excluded until WITH UNVERIFIED (6 total, badged). F1 must never quote inferred beliefs as the subject\u2019s words.',
   },
   {
     query: 'COMPARE proj-contextd vs proj-shard',
