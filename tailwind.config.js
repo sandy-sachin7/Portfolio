@@ -5,6 +5,11 @@ export default {
   theme: {
     extend: {
       colors: {
+        // Run tokens (locked — see AGENTS.md §2). Old light-*/dark-*
+        // palettes stay until P2 section rewrites remove them.
+        signal: '#FF4D00', // the one accent, both modes
+        ink: '#0E0E11', // dark lab surface
+        paper: '#EDECE8', // light surface
         // Light Mode Palette
         'light-bg': '#f8fafc', // Very light gray (almost white)
         'light-text': '#1e293b', // Dark slate
@@ -23,29 +28,10 @@ export default {
         'dark-card': '#1e293b', // Dark slate for cards/surfaces
         'dark-border': '#334155', // Mid-gray border
       },
-      animation: {
-        'fade-in': 'fadeIn 0.5s ease-in-out forwards',
-        'fade-in-up': 'fadeInUp 0.6s ease-out forwards',
-        'scale-up-hover': 'scaleUp 0.2s ease-out forwards',
-        'gradient-shift': 'gradientShift 5s ease infinite',
-      },
-      keyframes: {
-        fadeIn: {
-          '0%': { opacity: '0' },
-          '100%': { opacity: '1' },
-        },
-        fadeInUp: {
-          '0%': { transform: 'translateY(20px)', opacity: '0' },
-          '100%': { transform: 'translateY(0)', opacity: '1' },
-        },
-        scaleUp: { // Used for hover effects, hence no 'forwards' needed implicitly
-          '0%': { transform: 'scale(1)' },
-          '100%': { transform: 'scale(1.05)' },
-        },
-        gradientShift: {
-          '0%, 100%': { 'background-position': '0% 50%' },
-          '50%': { 'background-position': '100% 50%' },
-        },
+      fontFamily: {
+        display: ['"Space Grotesk"', 'Geist', 'system-ui', 'sans-serif'],
+        sans: ['Geist', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono"', 'ui-monospace', 'monospace'],
       },
       typography: (theme) => ({
         DEFAULT: {

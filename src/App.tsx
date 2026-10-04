@@ -7,6 +7,7 @@ import Projects from './components/Projects';
 import Skills from './components/Skills';
 import Blog from './components/Blog';
 import Contact from './components/Contact';
+import Grain from './components/Grain';
 import { Analytics } from "@vercel/analytics/react"
 
 function App() {
@@ -39,6 +40,7 @@ function App() {
 
   return (
     <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text transition-colors duration-300">
+      <Grain />
       <Header darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
       <main>
         <Hero />

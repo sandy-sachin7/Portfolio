@@ -1,12 +1,28 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" class="dark">
 
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Santhosh Sachin
-  </title>
+  <meta name="description" content="Santhosh Sachin — AI and backend engineer. A training run in public: checkpoints, ablations, weights, field notes." />
+  <meta name="theme-color" content="#0E0E11" />
+  <meta property="og:title" content="Santhosh Sachin — CHECKPOINT" />
+  <meta property="og:description" content="A training run in public: checkpoints, ablations, weights, field notes." />
+  <meta property="og:type" content="website" />
+  <title>Santhosh Sachin — CHECKPOINT</title>
+  <script>
+    // FOUC guard: dark lab is the default; only opt out when saved.
+    try {
+      if (localStorage.getItem('darkMode') !== 'false') {
+        document.documentElement.classList.add('dark');
+      } else {
+        document.documentElement.classList.remove('dark');
+      }
+    } catch (e) {
+      document.documentElement.classList.add('dark');
+    }
+  </script>
 </head>
 
 <body>
