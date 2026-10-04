@@ -1,6 +1,6 @@
 // App (F2): CAREER.DB shell. Identity rail, omnibar, results, inspector, index footer.
 // Concept #1 presentation components are deleted; the frozen engine is untouched.
-import { useEffect, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { db } from './db/dataset';
 import { STARTER_QUERIES } from './lib/starterQueries';
@@ -10,6 +10,7 @@ import Grain from './components/Grain';
 import { Omnibar } from './components/Omnibar';
 import { ResultSurface } from './components/ResultSurface';
 import { Inspector } from './components/Inspector';
+import { RecruiterSheet } from './components/RecruiterSheet';
 
 const BOOT_QUERY = 'SHOW highlights LIMIT 3';
 const FOOTER_INDEX = [
@@ -40,6 +41,9 @@ function useTheme(): [boolean, () => void] {
 export default function App() {
   const [dark, toggleTheme] = useTheme();
   const [input, setInput] = useState(BOOT_QUERY);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const recruiterBtnRef = useRef<HTMLButtonElement>(null);
   const { state, run } = useQueryEngine(BOOT_QUERY);
   const clock = useIstClock();
   const recruiter = db.recruiter;
@@ -49,12 +53,50 @@ export default function App() {
     if (state.lastQuery) setInput(state.lastQuery);
   }, [state.lastQuery]);
 
+  const openSheet = () => {
+    setSheetOpen(true);
+    setAnnouncement('Recruiter summary opened.');
+  };
+  const closeSheet = () => {
+    setSheetOpen(false);
+    setAnnouncement('Recruiter summary closed.');
+  };
+
+  // Plain `R` toggles the recruiter sheet. Never fires while typing,
+  // and never with modifier keys (no hijacking browser shortcuts).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'r' && e.key !== 'R') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      e.preventDefault();
+      setSheetOpen((open) => {
+        setAnnouncement(open ? 'Recruiter summary closed.' : 'Recruiter summary opened.');
+        return !open;
+      });
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
+  }, []);
+
+  // When the sheet closes, return focus to the trigger (never on mount).
+  const wasOpenRef = useRef(false);
+  useEffect(() => {
+    if (wasOpenRef.current && !sheetOpen) recruiterBtnRef.current?.focus();
+    wasOpenRef.current = sheetOpen;
+  }, [sheetOpen]);
+
   const footerQueries = STARTER_QUERIES.filter((q) => FOOTER_INDEX.includes(q.label));
 
   return (
     <div className="min-h-dvh bg-paper font-body text-ink dark:bg-ink dark:text-paper">
       <Grain />
       <Analytics />
+      <div role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
+      {sheetOpen && <RecruiterSheet recruiter={recruiter} onClose={closeSheet} />}
 
       <header className="border-b border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto flex max-w-6xl items-baseline justify-between gap-4 px-4 py-3">
@@ -66,6 +108,15 @@ export default function App() {
           </div>
           <div className="flex shrink-0 items-center gap-4 font-mono text-xs text-zinc-400 dark:text-zinc-500">
             <span aria-label="Current time in India">{clock} IST</span>
+            <button
+              type="button"
+              ref={recruiterBtnRef}
+              onClick={openSheet}
+              aria-label="Open recruiter summary (keyboard shortcut R)"
+              className="border border-zinc-200 px-3 py-2 hover:border-[#ff4d00] hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
+            >
+              recruiter [R]
+            </button>
             <button
               type="button"
               onClick={toggleTheme}
