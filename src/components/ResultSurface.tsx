@@ -1,6 +1,7 @@
 // ResultSurface (F2): LIST / READ / COMPARE. Semantic tables, honest receipts.
 import { useEffect, useState } from 'react';
 import type { ExecResult, ResultRow } from '../query/executor';
+import type { CollectionName } from '../db/schema';
 import { getById, hasCaseFile, subOf, titleOf } from '../lib/rows';
 import { CaseFile } from './CaseFile';
 import { CompareView } from './CompareView';
@@ -169,7 +170,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
               <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">affected evidence</h4>
               <ul className="mt-1 space-y-0.5 font-mono text-[13px]">
                 {result.affected.map((a) => {
-                  const rec = getById(a.collection as 'projects', a.id);
+                  const rec = getById(a.collection as CollectionName, a.id);
                   return <li key={`${a.collection}/${a.id}`}>{a.id}{rec ? ` · ${titleOf(a.collection, rec)}` : ''}</li>;
                 })}
               </ul>
