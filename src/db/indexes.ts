@@ -6,17 +6,18 @@ import type { CareerDB, CollectionName } from './schema';
 export interface DBIndexes {
   /** Every record with an id, keyed by id. */
   byId: Map<string, { collection: CollectionName; record: unknown }>;
-  /** Records with a start date, keyed by year (YYYY). */
-  byYear: Map<string, string[]>;
+  /** Records with a start date, keyed by year (YYYY), then collection. */
+  byYear: Map<string, Map<string, string[]>>;
   /** Skill id -> skill record. */
   bySkill: Map<string, string>;
   /** Project id -> project record. */
   byProject: Map<string, string>;
   /** Work id -> work record. */
   byWork: Map<string, string>;
-  /** Experiment stage -> experiment ids. */
+  /** Lowercased experiment stage -> experiment ids. Keys are lowercase because
+   *  matching is case-insensitive; the executor lowercases the query value. */
   byStage: Map<string, string[]>;
-  /** Project status -> project ids. */
+  /** Lowercased project status -> project ids. Same normalization rule. */
   byStatus: Map<string, string[]>;
   /** Lowercased topic/tag -> note ids + project ids. */
   byTopic: Map<string, string[]>;
@@ -48,9 +49,23 @@ function push(map: Map<string, string[]>, key: string, id: string): void {
   else map.set(key, [id]);
 }
 
+function pushYear(
+  byYear: Map<string, Map<string, string[]>>,
+  year: string,
+  collection: string,
+  id: string,
+): void {
+  let perCollection = byYear.get(year);
+  if (!perCollection) {
+    perCollection = new Map<string, string[]>();
+    byYear.set(year, perCollection);
+  }
+  push(perCollection, collection, id);
+}
+
 export function buildIndexes(db: CareerDB): DBIndexes {
   const byId = new Map<string, { collection: CollectionName; record: unknown }>();
-  const byYear = new Map<string, string[]>();
+  const byYear = new Map<string, Map<string, string[]>>();
   const bySkill = new Map<string, string>();
   const byProject = new Map<string, string>();
   const byWork = new Map<string, string>();
@@ -63,18 +78,18 @@ export function buildIndexes(db: CareerDB): DBIndexes {
     for (const record of records) {
       byId.set(record.id, { collection: name, record });
       const year = yearOf(record.start);
-      if (year) push(byYear, year, record.id);
+      if (year) pushYear(byYear, year, name, record.id);
     }
   }
 
   for (const skill of db.skills) bySkill.set(skill.id, skill.id);
   for (const project of db.projects) {
     byProject.set(project.id, project.id);
-    push(byStatus, project.status, project.id);
+    push(byStatus, project.status.toLowerCase(), project.id);
     for (const tag of project.stack) push(byTopic, tag.toLowerCase(), project.id);
   }
   for (const w of db.work) byWork.set(w.id, w.id);
-  for (const experiment of db.experiments) push(byStage, experiment.stage, experiment.id);
+  for (const experiment of db.experiments) push(byStage, experiment.stage.toLowerCase(), experiment.id);
   for (const note of db.notes) {
     for (const topic of note.topics) push(byTopic, topic.toLowerCase(), note.id);
   }

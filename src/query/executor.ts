@@ -1,7 +1,13 @@
 // CAREER.DB executor — F1. AST → rows + stats. Pure, no JSX.
-// Truth contract: needs_check and idea-notes are excluded by default and
-// listed in `excluded` with a reason. WITH UNVERIFIED opts them back in
-// (still badged). Nothing unverified ever renders as settled fact.
+//
+// Truth contract (read before touching splitTrust):
+// - verified / asserted records are presentable as-is (asserted renders badged).
+// - needs_check records are candidate evidence awaiting verification: excluded
+//   by default into a NAMED `excluded` list, re-admitted visibly badged only
+//   via WITH UNVERIFIED. Never dressed as settled fact.
+// - idea notes are NOT evidence at all (not artifacts yet): always excluded
+//   and listed, even under WITH UNVERIFIED. Do not "fix" this in F2.
+// - LOG reads mutable session state and is NEVER cached.
 
 import type { CareerDB, CollectionName, VerificationState } from '../db/schema';
 import { type DBIndexes } from '../db/indexes';
@@ -238,11 +244,14 @@ function planScan(
   if (filter.op !== '=') return full('inequality has no index');
   const val = String(filter.value);
   if (collection === 'experiments' && filter.field === 'stage') {
-    const hit = indexes.byStage.get(val) ?? [];
+    // Index keys are lowercased at build; full-scan compareValues is
+    // case-insensitive, so the lookup must be too — or the plan changes
+    // the meaning of the query.
+    const hit = indexes.byStage.get(val.toLowerCase()) ?? [];
     return { ids: [...hit], scanned: hit.length, index: `index: byStage(stage=${val})` };
   }
   if (collection === 'projects' && filter.field === 'status') {
-    const hit = indexes.byStatus.get(val) ?? [];
+    const hit = indexes.byStatus.get(val.toLowerCase()) ?? [];
     return { ids: [...hit], scanned: hit.length, index: `index: byStatus(status=${val})` };
   }
   if (
@@ -256,8 +265,11 @@ function planScan(
     (filter.field === 'start' || filter.field === 'date') &&
     /^\d{4}$/.test(val)
   ) {
-    const hit = indexes.byYear.get(val) ?? [];
-    return { ids: [...hit], scanned: hit.length, index: `index: byYear(${val})` };
+    // byYear is nested year -> collection -> ids, so `scanned` counts only
+    // records of the queried collection. A global year list would inflate it
+    // with other collections' ids that get filtered out afterwards.
+    const hit = indexes.byYear.get(val)?.get(collection as CollectionName) ?? [];
+    return { ids: [...hit], scanned: hit.length, index: `index: byYear(${collection}, ${val})` };
   }
   return full(`no index on ${filter.field}`);
 }
@@ -284,20 +296,28 @@ export function execute(
   opts: ExecuteOpts,
 ): ExecResult {
   const t0 = performance.now();
+  // LOG reads mutable session state (the log itself): caching it would serve
+  // a stale snapshot as the truth. It always executes fresh.
+  const cacheable = ast.kind !== 'log';
   const key = `${hashAST(ast)}|u:${ast.kind === 'show' && (ast.withUnverified || opts.includeUnverified) ? 1 : 0}`;
-  const cached = cache.get(key);
-  if (cached) {
-    const ms = performance.now() - t0;
-    const stats: ExecStats = {
-      ms,
-      scanned: 0,
-      returned: countResult(cached),
-      excluded: 0,
-      cacheHit: true,
-      index: 'cache hit: normalized AST hash match',
-    };
-    LOG.push({ at: new Date().toISOString(), query: opts.query, returned: stats.returned, ms, cacheHit: true });
-    return { ...cached, stats } as ExecResult;
+  if (cacheable) {
+    const cached = cache.get(key);
+    if (cached) {
+      // True LRU: a hit refreshes recency, otherwise eviction degrades to FIFO.
+      cache.delete(key);
+      cache.set(key, cached);
+      const ms = performance.now() - t0;
+      const stats: ExecStats = {
+        ms,
+        scanned: 0,
+        returned: countResult(cached),
+        excluded: 0,
+        cacheHit: true,
+        index: 'cache hit: normalized AST hash match',
+      };
+      LOG.push({ at: new Date().toISOString(), query: opts.query, returned: stats.returned, ms, cacheHit: true });
+      return { ...cached, stats } as ExecResult;
+    }
   }
 
   const result = runUncached(db, indexes, ast, opts);
@@ -305,10 +325,12 @@ export function execute(
   if (result.ok) {
     const { stats: _drop, ...payload } = result as { stats: ExecStats } & Record<string, unknown>;
     void _drop;
-    cache.set(key, payload as Omit<Extract<ExecResult, { ok: true }>, 'stats'>);
-    if (cache.size > CACHE_CAP) {
-      const oldest = cache.keys().next();
-      if (!oldest.done) cache.delete(oldest.value);
+    if (cacheable) {
+      cache.set(key, payload as Omit<Extract<ExecResult, { ok: true }>, 'stats'>);
+      if (cache.size > CACHE_CAP) {
+        const oldest = cache.keys().next();
+        if (!oldest.done) cache.delete(oldest.value);
+      }
     }
     const stats: ExecStats = { ...(result as { stats: ExecStats }).stats, ms, cacheHit: false };
     const final = { ...result, stats } as ExecResult;

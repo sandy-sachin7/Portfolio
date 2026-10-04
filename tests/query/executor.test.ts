@@ -157,3 +157,67 @@ describe('executor: cache and log are real', () => {
     } else throw new Error('expected rows result');
   });
 });
+
+describe('executor: F1.1 truthfulness fixes', () => {
+  it('cache is really LRU: a hit refreshes recency before eviction', () => {
+    // Fill the 20-slot cache with 21 distinct ASTs would evict #1;
+    // touch #1 first so #2 (untouched) is evicted instead.
+    for (let n = 1; n <= 20; n++) run(`SHOW work LIMIT ${n}`);
+    const touched = run('SHOW work LIMIT 1');
+    if (!touched.ok) throw new Error('expected rows result');
+    expect(touched.stats.cacheHit).toBe(true);
+    run('SHOW work LIMIT 21');
+    const survivor = run('SHOW work LIMIT 1');
+    const evicted = run('SHOW work LIMIT 2');
+    if (!survivor.ok || !evicted.ok) throw new Error('expected rows results');
+    expect(survivor.stats.cacheHit).toBe(true);
+    expect(evicted.stats.cacheHit).toBe(false);
+  });
+
+  it('LOG is never cached: it sees queries that ran after the first LOG', () => {
+    const first = run('LOG');
+    run('SHOW work');
+    const second = run('LOG');
+    if (
+      first.ok && first.kind === 'log' &&
+      second.ok && second.kind === 'log'
+    ) {
+      // +1 for the SHOW work entry, +1 for the first LOG's own entry
+      expect(second.entries.length).toBe(first.entries.length + 2);
+      expect(second.stats.cacheHit).toBe(false);
+      expect(second.entries.some((e) => e.query === 'SHOW work')).toBe(true);
+    } else throw new Error('expected log results');
+  });
+
+  it('indexed filters mean the same as full scans regardless of case', () => {
+    const upper = run('SHOW experiments WHERE stage = "ADOPTED"');
+    const lower = run('SHOW experiments WHERE stage = "adopted"');
+    const mixed = run('SHOW experiments WHERE stage = "Adopted"');
+    if (
+      upper.ok && upper.kind === 'rows' &&
+      lower.ok && lower.kind === 'rows' &&
+      mixed.ok && mixed.kind === 'rows'
+    ) {
+      const ids = (r: typeof upper) =>
+        r.ok && r.kind === 'rows' ? r.rows.map((row) => row.id).sort() : [];
+      expect(ids(lower)).toEqual(ids(upper));
+      expect(ids(mixed)).toEqual(ids(upper));
+      expect(upper.rows.length).toBeGreaterThan(0);
+    } else throw new Error('expected rows results');
+  });
+
+  it('byYear scanned counts only the queried collection', () => {
+    const r = run('SHOW work WHERE start = "2024"');
+    if (r.ok && r.kind === 'rows') {
+      expect(r.stats.index).toMatch(/index: byYear\(work, 2024\)/);
+      // Scanned = work records with a 2024 start that were actually examined:
+      // in-collection only, never inflated with other collections' ids.
+      const examined = db.work.filter((w) =>
+        ((w as unknown as Record<string, unknown>)['start'] as string | undefined)?.startsWith('2024'),
+      ).length;
+      expect(r.stats.scanned).toBe(examined);
+      expect(r.stats.scanned).toBeLessThanOrEqual(db.work.length);
+      expect(r.rows.length + r.excluded.length).toBeLessThanOrEqual(r.stats.scanned);
+    } else throw new Error('expected rows result');
+  });
+});
