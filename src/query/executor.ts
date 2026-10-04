@@ -331,7 +331,9 @@ export function execute(
         ms,
         scanned: 0,
         returned: countResult(cached),
-        excluded: 0,
+        // The cache stores the payload rows; excluded records travel with it,
+        // so a hit must report the same exclusion count, not zero.
+        excluded: cached.kind === 'rows' ? cached.excluded.length : 0,
         cacheHit: true,
         index: 'cache hit: normalized AST hash match',
       };

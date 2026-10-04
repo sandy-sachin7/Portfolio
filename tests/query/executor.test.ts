@@ -140,6 +140,18 @@ describe('executor: cache and log are real', () => {
     expect(hashAST(parse('SHOW work') as AST)).not.toBe(hashAST(parse('SHOW projects') as AST));
   });
 
+  it('cache hits preserve the excluded count, not zero it', () => {
+    const first = run('SHOW beliefs');
+    const second = run('SHOW beliefs');
+    if (first.ok && first.kind === 'rows' && second.ok && second.kind === 'rows') {
+      expect(first.stats.cacheHit).toBe(false);
+      expect(first.excluded.length).toBeGreaterThan(0);
+      expect(second.stats.cacheHit).toBe(true);
+      expect(second.stats.excluded).toBe(first.excluded.length);
+      expect(second.excluded).toEqual(first.excluded);
+    } else throw new Error('expected rows results');
+  });
+
   it('log is append-only and exports JSONL', () => {
     run('SHOW work');
     run('WITHOUT rust');
@@ -237,6 +249,8 @@ describe('executor: F1.2 year-prefix and badge semantics', () => {
       negated.ok && negated.kind === 'rows'
     ) {
       expect(year.rows.map((r) => r.id).sort()).toEqual(['work-fidelity', 'work-lam']);
+      // Proves this result came through the index path, not a stale cache entry.
+      expect(year.stats.index).toMatch(/byYear/);
       expect(exact.rows.map((r) => r.id)).toEqual(['work-fidelity']);
       expect(negated.rows.map((r) => r.id)).toEqual(['work-optum']);
     } else throw new Error('expected rows results');
