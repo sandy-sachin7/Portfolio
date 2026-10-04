@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { db as dataset } from '../../src/db/dataset';
 import { buildIndexes } from '../../src/db/indexes';
-import { assertValidDataset, isPresentable, requiresBadge, validateDataset } from '../../src/db/validate';
+import { assertValidDataset, isPresentable, badgeFor, validateDataset } from '../../src/db/validate';
 import { STARTER_QUERIES, STARTER_REFERENCED_IDS } from '../../src/lib/starterQueries';
 
 describe('dataset validation', () => {
@@ -133,10 +133,10 @@ describe('starter queries', () => {
     expect(expensive).toEqual(['fail-contextd-v1', 'fail-relational-queries', 'fail-tabular-baseline']);
   });
 
-  it('expensive failures are all needs_check, so F1 must badge them', () => {
+  it('expensive failures are all needs_check, so F1 must badge them UNVERIFIED', () => {
     const expensive = dataset.failures.filter((f) => f.costDays > 14);
     for (const f of expensive) {
-      expect(requiresBadge(f.verification), `failure:${f.id} must render badged`).toBe(true);
+      expect(badgeFor(f.verification), `failure:${f.id} must render badged`).toBe('unverified');
     }
   });
 
@@ -186,12 +186,13 @@ describe('recruiter data', () => {
 });
 
 describe('verification semantics (F1 contract)', () => {
-  it('verified and asserted are presentable; needs_check requires a badge', () => {
+  it('verified is settled, asserted carries ASSERTED, needs_check carries UNVERIFIED', () => {
     expect(isPresentable('verified')).toBe(true);
     expect(isPresentable('asserted')).toBe(true);
     expect(isPresentable('needs_check')).toBe(false);
-    expect(requiresBadge('needs_check')).toBe(true);
-    expect(requiresBadge('verified')).toBe(false);
+    expect(badgeFor('verified')).toBe(null);
+    expect(badgeFor('asserted')).toBe('asserted');
+    expect(badgeFor('needs_check')).toBe('unverified');
   });
 
   it('every belief declares stated-vs-inferred provenance', () => {

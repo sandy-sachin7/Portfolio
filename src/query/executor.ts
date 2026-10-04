@@ -1,25 +1,30 @@
 // CAREER.DB executor — F1. AST → rows + stats. Pure, no JSX.
 //
 // Truth contract (read before touching splitTrust):
-// - verified / asserted records are presentable as-is (asserted renders badged).
+// - verified renders with no badge (settled fact).
+// - asserted renders with an ASSERTED badge (subject-stated, not
+//   independently verified). Never dress it as verified.
 // - needs_check records are candidate evidence awaiting verification: excluded
-//   by default into a NAMED `excluded` list, re-admitted visibly badged only
-//   via WITH UNVERIFIED. Never dressed as settled fact.
+//   by default into a NAMED `excluded` list, re-admitted with an UNVERIFIED
+//   badge only via WITH UNVERIFIED. Never dressed as settled fact.
 // - idea notes are NOT evidence at all (not artifacts yet): always excluded
 //   and listed, even under WITH UNVERIFIED. Do not "fix" this in F2.
 // - LOG reads mutable session state and is NEVER cached.
+// - A bare YYYY on a year-indexed field (start) means calendar-year prefix
+//   in BOTH the index and the row evaluator. The plan must never change
+//   the meaning of the query.
 
 import type { CareerDB, CollectionName, VerificationState } from '../db/schema';
 import { type DBIndexes } from '../db/indexes';
-import { isPresentable, requiresBadge } from '../db/validate';
+import { isPresentable, badgeFor, type BadgeKind } from '../db/validate';
 import { type AST, type FilterNode, FIELDS, nearestWord } from './parser';
 
 export interface ResultRow {
   collection: CollectionName;
   id: string;
   record: unknown;
-  /** True when the row must render with a verification badge. */
-  badge: boolean;
+  /** Verification badge the row must render, or null for settled fact. */
+  badge: BadgeKind | null;
 }
 
 export interface ExcludedRow {
@@ -126,7 +131,16 @@ function fieldValue(record: RecordAny, field: string): unknown {
   return record[field];
 }
 
-function compareValues(actual: unknown, op: string, expected: string | number): boolean {
+/** Fields served by byYear, which is built from `start` date prefixes.
+ *  A bare YYYY filter on one of these means "within that calendar year"
+ *  (prefix), never exact equality. `date` is deliberately NOT in this set:
+ *  the index was never built from it, so it takes the honest full-scan path. */
+const YEAR_PREFIX_FIELDS = new Set(['start']);
+function isYearPrefix(field: string, expected: string | number): boolean {
+  return YEAR_PREFIX_FIELDS.has(field) && /^\d{4}$/.test(String(expected));
+}
+
+function compareValues(field: string, actual: unknown, op: string, expected: string | number): boolean {
   if (Array.isArray(actual)) {
     // `=` on an array means membership. Honest and documented.
     const has = actual.some((v) => String(v).toLowerCase() === String(expected).toLowerCase());
@@ -154,6 +168,12 @@ function compareValues(actual: unknown, op: string, expected: string | number): 
   }
   const a = String(actual ?? '').toLowerCase();
   const b = String(expected).toLowerCase();
+  if (isYearPrefix(field, expected) && (op === '=' || op === '!=')) {
+    // Prefix in the evaluator, prefix in the index: the plan never changes
+    // the meaning of the query.
+    const hit = a.startsWith(b);
+    return op === '=' ? hit : !hit;
+  }
   switch (op) {
     case '=':
       return a === b;
@@ -174,7 +194,7 @@ function compareValues(actual: unknown, op: string, expected: string | number): 
 function evalFilter(record: RecordAny, node: FilterNode): boolean {
   if (node.kind === 'and') return evalFilter(record, node.left) && evalFilter(record, node.right);
   if (node.kind === 'or') return evalFilter(record, node.left) || evalFilter(record, node.right);
-  return compareValues(fieldValue(record, node.field), node.op, node.value);
+  return compareValues(node.field, fieldValue(record, node.field), node.op, node.value);
 }
 
 function sortRows(rows: ResultRow[], field: string, dir: 'ASC' | 'DESC'): ResultRow[] {
@@ -219,7 +239,7 @@ function splitTrust(
       excluded.push({ collection, id, reason: 'needs_check' });
       continue;
     }
-    rows.push({ collection, id, record, badge: v ? requiresBadge(v) : false });
+    rows.push({ collection, id, record, badge: v ? badgeFor(v) : null });
   }
   return { rows, excluded };
 }
@@ -261,10 +281,10 @@ function planScan(
     const hit = indexes.byTopic.get(val.toLowerCase()) ?? [];
     return { ids: [...hit], scanned: hit.length, index: `index: byTopic(${filter.field}=${val})` };
   }
-  if (
-    (filter.field === 'start' || filter.field === 'date') &&
-    /^\d{4}$/.test(val)
-  ) {
+  // Only `start` is year-indexed (byYear is built from `start` prefixes).
+  // `date` was never indexed, so routing it here would credit an index that
+  // does not serve it. It falls through to the honest full scan below.
+  if (filter.field === 'start' && /^\d{4}$/.test(val)) {
     // byYear is nested year -> collection -> ids, so `scanned` counts only
     // records of the queried collection. A global year list would inflate it
     // with other collections' ids that get filtered out afterwards.
@@ -394,7 +414,7 @@ function runUncached(
       const toRow = (hit: { collection: CollectionName; record: unknown }): ResultRow => {
         const rec = hit.record as RecordAny;
         const v = verificationOf(rec);
-        return { collection: hit.collection, id: String(rec['id'] ?? ''), record: rec, badge: v ? requiresBadge(v) : false };
+        return { collection: hit.collection, id: String(rec['id'] ?? ''), record: rec, badge: v ? badgeFor(v) : null };
       };
       const left = toRow(leftHit);
       const right = toRow(rightHit);

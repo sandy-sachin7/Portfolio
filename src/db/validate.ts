@@ -294,18 +294,25 @@ export function validateDataset(db: CareerDB): ValidationError[] {
 
 /**
  * F1 presentation contract.
- * - verified: safe to present as factual.
- * - asserted: showable, but the UI must never dress it as independently verified.
- * - needs_check: excluded from default high-confidence result sets, or rendered
- *   with a visible badge + include path. Silent presentation as fact is a bug.
+ * - verified: safe to present as factual. No badge.
+ * - asserted: showable, but the UI must never dress it as independently
+ *   verified. Renders with an ASSERTED badge.
+ * - needs_check: candidate evidence awaiting verification. Excluded from
+ *   default result sets into a named list; re-admitted only via
+ *   WITH UNVERIFIED, rendered with an UNVERIFIED badge.
+ *   Silent presentation as fact is a bug.
  */
 export function isPresentable(v: VerificationState): boolean {
   return v === 'verified' || v === 'asserted';
 }
 
-/** True when a record must carry a visible verification badge in F1 views. */
-export function requiresBadge(v: VerificationState): boolean {
-  return v === 'needs_check';
+export type BadgeKind = 'asserted' | 'unverified';
+
+/** Badge a row must render, or null for settled (verified) fact. */
+export function badgeFor(v: VerificationState): BadgeKind | null {
+  if (v === 'needs_check') return 'unverified';
+  if (v === 'asserted') return 'asserted';
+  return null;
 }
 
 /** Throw on first validation failure. Loud by design. */

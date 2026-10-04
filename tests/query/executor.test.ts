@@ -23,7 +23,7 @@ describe('executor: starter queries return documented counts', () => {
     expect(r.ok && r.kind === 'rows' && r.rows.length).toBe(3);
   });
 
-  it('SHOW work → 3, SHOW projects → 5, SHOW beliefs → 6', () => {
+  it('SHOW work → 3, SHOW projects → 5, SHOW beliefs → 3 presentable (6 with opt-in)', () => {
     expect(run('SHOW work')).toMatchObject({ ok: true });
     const work = run('SHOW work');
     if (work.ok && work.kind === 'rows') expect(work.rows.length).toBe(3);
@@ -35,7 +35,9 @@ describe('executor: starter queries return documented counts', () => {
     const beliefsAll = run('SHOW beliefs ORDER BY date DESC WITH UNVERIFIED');
     if (beliefsAll.ok && beliefsAll.kind === 'rows') {
       expect(beliefsAll.rows.length).toBe(6);
-      expect(beliefsAll.rows.filter((r) => r.badge).length).toBe(3);
+      // 3 asserted (subject-stated) + 3 needs_check (opted in): distinct badges
+      expect(beliefsAll.rows.filter((r) => r.badge === 'asserted').length).toBe(3);
+      expect(beliefsAll.rows.filter((r) => r.badge === 'unverified').length).toBe(3);
     }
   });
 
@@ -46,8 +48,8 @@ describe('executor: starter queries return documented counts', () => {
       expect(r.rows.map((row) => row.id).sort()).toEqual(
         ['fail-contextd-v1', 'fail-relational-queries', 'fail-tabular-baseline'].sort(),
       );
-      // needs_check rows are badged, never dressed as settled fact
-      expect(r.rows.every((row) => row.badge)).toBe(true);
+      // needs_check rows carry UNVERIFIED, never dressed as settled fact
+      expect(r.rows.every((row) => row.badge === 'unverified')).toBe(true);
     }
   });
 
@@ -218,6 +220,46 @@ describe('executor: F1.1 truthfulness fixes', () => {
       expect(r.stats.scanned).toBe(examined);
       expect(r.stats.scanned).toBeLessThanOrEqual(db.work.length);
       expect(r.rows.length + r.excluded.length).toBeLessThanOrEqual(r.stats.scanned);
+      // Prefix semantics are real now: both 2024 work records match (both verified).
+      expect(r.rows.map((row) => row.id).sort()).toEqual(['work-fidelity', 'work-lam']);
+    } else throw new Error('expected rows result');
+  });
+});
+
+describe('executor: F1.2 year-prefix and badge semantics', () => {
+  it('YYYY on start is calendar-year prefix; full stamps stay exact', () => {
+    const year = run('SHOW work WHERE start = "2024"');
+    const exact = run('SHOW work WHERE start = "2024-06"');
+    const negated = run('SHOW work WHERE start != "2024"');
+    if (
+      year.ok && year.kind === 'rows' &&
+      exact.ok && exact.kind === 'rows' &&
+      negated.ok && negated.kind === 'rows'
+    ) {
+      expect(year.rows.map((r) => r.id).sort()).toEqual(['work-fidelity', 'work-lam']);
+      expect(exact.rows.map((r) => r.id)).toEqual(['work-fidelity']);
+      expect(negated.rows.map((r) => r.id)).toEqual(['work-optum']);
+    } else throw new Error('expected rows results');
+  });
+
+  it('date is never served by byYear: honest full scan, exact match', () => {
+    const r = run('SHOW experiments WHERE date = "2024"');
+    if (r.ok && r.kind === 'rows') {
+      // Experiments carry YYYY-MM dates; a bare YYYY matches none exactly,
+      // and the plan must admit the full scan instead of crediting byYear.
+      expect(r.rows.length).toBe(0);
+      expect(r.stats.index).toMatch(/full scan/);
+      expect(r.stats.index).not.toMatch(/byYear/);
+    } else throw new Error('expected rows result');
+  });
+
+  it('asserted rows carry ASSERTED, verified rows carry no badge', () => {
+    const r = run('SHOW work');
+    if (r.ok && r.kind === 'rows') {
+      const badgeById = Object.fromEntries(r.rows.map((row) => [row.id, row.badge]));
+      expect(badgeById['work-optum']).toBe('asserted');
+      expect(badgeById['work-lam']).toBe(null);
+      expect(badgeById['work-fidelity']).toBe(null);
     } else throw new Error('expected rows result');
   });
 });
