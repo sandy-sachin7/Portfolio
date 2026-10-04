@@ -26,7 +26,7 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
         <button
           onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
           className="font-display text-lg font-bold tracking-tight"
-          aria-label="Back to top"
+          aria-label="SS/ back to top"
         >
           SS<span className="text-signal">/</span>
         </button>
@@ -47,7 +47,7 @@ export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
           <button
             onClick={() => window.dispatchEvent(new Event('checkpoint:palette-open'))}
             className="hidden border border-ink/25 px-2 py-1 font-mono text-xs text-ink/70 sm:block dark:border-paper/25 dark:text-paper/70"
-            aria-label="Open command palette"
+            aria-label="⌘K open command palette"
           >
             ⌘K
           </button>

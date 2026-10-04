@@ -78,7 +78,7 @@ export default function Checkpoints() {
                   </li>
                 ))}
               </ul>
-              <p className="mt-5 font-mono text-xs tracking-[0.12em] text-ink/45 dark:text-paper/45">
+              <p className="mt-5 font-mono text-xs tracking-[0.12em] text-ink/60 dark:text-paper/60">
                 {c.demo ?? 'demo: pending'} · {c.repo ?? 'repo: pending'}
               </p>
             </article>
