@@ -6,10 +6,12 @@
 export type Era = 'PAST' | 'PRESENT' | 'DIRECTION';
 
 /**
- * How much we trust a record.
- * - verified: confirmed by an inspectable source (resume PDF, public repo/release, shipped artifact).
- * - asserted: stated by the subject (user brief); plausible, not independently checked.
- * - needs_check: included structurally but missing confirmation — must not ship as fact.
+ * How much we trust a record. F1 engine contract:
+ * - verified: safe to present as factual.
+ * - asserted: subject stated it; showable, but never dressed as independently verified.
+ * - needs_check: candidate evidence awaiting verification. MUST NOT participate in
+ *   high-confidence claims by default — F1 default result sets exclude it, or badge
+ *   it visibly with a path to include it. Silently presenting it as fact is a bug.
  */
 export type VerificationState = 'verified' | 'asserted' | 'needs_check';
 
@@ -144,6 +146,8 @@ export interface Experiment {
 
 // ---------------------------------------------------------------- notes ---
 
+export type NoteStatus = 'published' | 'referenced' | 'idea';
+
 export interface Note {
   id: string;
   title: string;
@@ -152,6 +156,13 @@ export interface Note {
   url?: string;
   excerpt: string;
   topics: string[];
+  /**
+   * published = verifiable public artifact (url required).
+   * referenced = subject-referenced topic with no confirmed URL; must not be
+   *   presented as a published artifact.
+   * idea = not yet written; must not appear in evidence results.
+   */
+  status: NoteStatus;
   projectIds: string[];
   experimentIds: string[];
   beliefIds: string[];
@@ -170,6 +181,16 @@ export interface Belief {
   context: string;
   date?: string;
   strength: BeliefStrength;
+  /**
+   * stated = subject explicitly holds this (brief/conversation).
+   * inferred = synthesized from records; confirm wording with subject.
+   * Inferred beliefs must never be quoted as the subject's words.
+   */
+  origin: 'stated' | 'inferred';
+  /** Belief evolution: supersededById + changeReason record a changed mind. */
+  supersedesId?: string;
+  supersededById?: string;
+  changeReason?: string;
   /** Ids of experiments/projects/notes backing this. */
   evidence: string[];
   relatedExperimentIds: string[];
@@ -256,6 +277,13 @@ export interface Recruiter {
   role: string;
   positioning: string;
   location: string;
+  /** Per-field trust: stale fields (location/URLs) must be marked, never silently published. */
+  fieldVerification: {
+    location: VerificationState;
+    github: VerificationState;
+    linkedin: VerificationState;
+    email: VerificationState;
+  };
   proof: [string, string, string];
   projects: RecruiterProject[];
   experience: RecruiterExperience[];

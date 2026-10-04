@@ -6,7 +6,7 @@
 import { describe, expect, it } from 'vitest';
 import { db as dataset } from '../../src/db/dataset';
 import { buildIndexes } from '../../src/db/indexes';
-import { assertValidDataset, validateDataset } from '../../src/db/validate';
+import { assertValidDataset, isPresentable, requiresBadge, validateDataset } from '../../src/db/validate';
 import { STARTER_QUERIES, STARTER_REFERENCED_IDS } from '../../src/lib/starterQueries';
 
 describe('dataset validation', () => {
@@ -128,15 +128,29 @@ describe('starter queries', () => {
     }
   });
 
-  it('expensive-failure filter returns at least two postmortems', () => {
+  it('expensive-failure filter returns exactly the three costly postmortems', () => {
+    const expensive = dataset.failures.filter((f) => f.costDays > 14).map((f) => f.id).sort();
+    expect(expensive).toEqual(['fail-contextd-v1', 'fail-relational-queries', 'fail-tabular-baseline']);
+  });
+
+  it('expensive failures are all needs_check, so F1 must badge them', () => {
     const expensive = dataset.failures.filter((f) => f.costDays > 14);
-    expect(expensive.length).toBeGreaterThanOrEqual(2);
+    for (const f of expensive) {
+      expect(requiresBadge(f.verification), `failure:${f.id} must render badged`).toBe(true);
+    }
   });
 
   it('both experiment terminal stages are represented', () => {
     const stages = new Set(dataset.experiments.map((e) => e.stage));
     expect(stages.has('ADOPTED')).toBe(true);
     expect(stages.has('ABANDONED')).toBe(true);
+  });
+
+  it('adopted experiments outnumber abandoned ones (explore-then-commit, not tourism)', () => {
+    const adopted = dataset.experiments.filter((e) => e.stage === 'ADOPTED').length;
+    const abandoned = dataset.experiments.filter((e) => e.stage === 'ABANDONED').length;
+    expect(adopted).toBeGreaterThanOrEqual(2);
+    expect(abandoned).toBeGreaterThanOrEqual(1);
   });
 });
 
@@ -152,5 +166,52 @@ describe('recruiter data', () => {
     expect(r.contact.github).toContain('github.com');
     expect(r.contact.linkedin).toContain('linkedin.com');
     expect(r.contact.resume).toContain('/assets/');
+  });
+
+  it('marks stale-prone fields instead of publishing them as fact', () => {
+    const fv = dataset.recruiter.fieldVerification;
+    expect(fv.github).toBe('verified'); // repo owner confirmed via API
+    expect(fv.location).toBe('needs_check'); // city unknown; country only
+    expect(fv.linkedin).toBe('needs_check'); // carried from old portfolio
+    expect(fv.email).toBe('needs_check'); // carried from old portfolio
+  });
+
+  it('Lam is historical and education is graduated', () => {
+    const lam = dataset.work.find((w) => w.id === 'work-lam');
+    expect(lam?.current).toBe(false);
+    expect(lam?.era).toBe('PAST');
+    const edu = dataset.education.find((e) => e.id === 'edu-amrita');
+    expect(edu?.end).toBeTruthy();
+  });
+});
+
+describe('verification semantics (F1 contract)', () => {
+  it('verified and asserted are presentable; needs_check requires a badge', () => {
+    expect(isPresentable('verified')).toBe(true);
+    expect(isPresentable('asserted')).toBe(true);
+    expect(isPresentable('needs_check')).toBe(false);
+    expect(requiresBadge('needs_check')).toBe(true);
+    expect(requiresBadge('verified')).toBe(false);
+  });
+
+  it('every belief declares stated-vs-inferred provenance', () => {
+    for (const b of dataset.beliefs) {
+      expect(['stated', 'inferred']).toContain(b.origin);
+    }
+    // At least one of each: the model must carry both voice and synthesis.
+    const origins = new Set(dataset.beliefs.map((b) => b.origin));
+    expect(origins.has('stated')).toBe(true);
+    expect(origins.has('inferred')).toBe(true);
+  });
+
+  it('every note declares published-vs-referenced status', () => {
+    for (const n of dataset.notes) {
+      expect(['published', 'referenced', 'idea']).toContain(n.status);
+    }
+    // Published notes carry verifiable URLs; referenced ones must not fake them.
+    for (const n of dataset.notes) {
+      if (n.status === 'published') expect(n.url, `note:${n.id}`).toBeTruthy();
+      else expect(n.url, `note:${n.id}`).toBeUndefined();
+    }
   });
 });

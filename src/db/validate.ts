@@ -3,7 +3,7 @@
  * Fails loudly: every check returns human-readable errors.
  * Field names match src/db/schema.ts exactly (*Ids relations, no `related*`).
  */
-import type { CareerDB } from './schema';
+import type { CareerDB, VerificationState } from './schema';
 
 export interface ValidationError {
   entity: string;
@@ -118,6 +118,17 @@ export function validateDataset(db: CareerDB): ValidationError[] {
     registerId('note', n.id);
     nonEmpty(errors, 'note', n.id, 'title', n.title);
     nonEmpty(errors, 'note', n.id, 'excerpt', n.excerpt);
+    if (n.status !== 'published' && n.status !== 'referenced' && n.status !== 'idea') {
+      errors.push(err('note', n.id, 'status', `unknown note status "${(n as { status: string }).status}" (want published|referenced|idea)`));
+    }
+    // A published note is a verifiable artifact: it must carry its URL.
+    if (n.status === 'published' && !n.url) {
+      errors.push(err('note', n.id, 'url', 'published note must carry a verifiable url'));
+    }
+    // Referenced/idea notes must never masquerade as published artifacts.
+    if (n.status !== 'published' && n.url) {
+      errors.push(err('note', n.id, 'url', `unpublished note (status=${n.status}) must not carry a url`));
+    }
     checkDate(errors, 'note', n.id, 'date', n.date, false);
     checkUrl(errors, 'note', n.id, 'url', n.url);
     if (!n.provenance?.source) errors.push(err('note', n.id, 'provenance', 'missing provenance'));
@@ -127,6 +138,9 @@ export function validateDataset(db: CareerDB): ValidationError[] {
     registerId('belief', b.id);
     nonEmpty(errors, 'belief', b.id, 'statement', b.statement);
     checkDate(errors, 'belief', b.id, 'date', b.date, false);
+    if (b.origin !== 'stated' && b.origin !== 'inferred') {
+      errors.push(err('belief', b.id, 'origin', `unknown belief origin (want stated|inferred)`));
+    }
     if (b.evidence.length === 0) {
       errors.push(err('belief', b.id, 'evidence', 'belief has no evidence links'));
     }
@@ -209,6 +223,11 @@ export function validateDataset(db: CareerDB): ValidationError[] {
   }
   for (const b of db.beliefs) {
     for (const ev of b.evidence) checkRef('belief', b.id, 'evidence', ev);
+    if (b.supersedesId) checkRef('belief', b.id, 'supersedesId', b.supersedesId);
+    if (b.supersededById) checkRef('belief', b.id, 'supersededById', b.supersededById);
+    if ((b.supersededById && !b.changeReason) || (b.supersedesId && !b.changeReason)) {
+      errors.push(err('belief', b.id, 'changeReason', 'supersede chain without a reason hides why the mind changed'));
+    }
     checkRefs('belief', b.id, 'relatedExperimentIds', b.relatedExperimentIds);
     checkRefs('belief', b.id, 'relatedProjectIds', b.relatedProjectIds);
     checkRefs('belief', b.id, 'relatedNoteIds', b.relatedNoteIds);
@@ -271,6 +290,22 @@ export function validateDataset(db: CareerDB): ValidationError[] {
   }
 
   return errors;
+}
+
+/**
+ * F1 presentation contract.
+ * - verified: safe to present as factual.
+ * - asserted: showable, but the UI must never dress it as independently verified.
+ * - needs_check: excluded from default high-confidence result sets, or rendered
+ *   with a visible badge + include path. Silent presentation as fact is a bug.
+ */
+export function isPresentable(v: VerificationState): boolean {
+  return v === 'verified' || v === 'asserted';
+}
+
+/** True when a record must carry a visible verification badge in F1 views. */
+export function requiresBadge(v: VerificationState): boolean {
+  return v === 'needs_check';
 }
 
 /** Throw on first validation failure. Loud by design. */

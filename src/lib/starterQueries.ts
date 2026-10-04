@@ -13,6 +13,11 @@ export interface StarterQuery {
   why: string;
   /** Rows the current dataset returns (update when the dataset changes). */
   expectedCount: number;
+  /**
+   * Verification caveat for F1: e.g. when every returned row is needs_check
+   * and must render badged. Omit when all rows are presentable.
+   */
+  note?: string;
 }
 
 export const STARTER_QUERIES: StarterQuery[] = [
@@ -44,13 +49,14 @@ export const STARTER_QUERIES: StarterQuery[] = [
     query: 'SHOW failures WHERE costDays > 14',
     label: 'Where you failed',
     why: 'Vulnerability as data. Only the expensive postmortems survive this filter.',
-    expectedCount: 2,
+    expectedCount: 3,
+    note: 'All 3 rows (fail-tabular-baseline 20d, fail-relational-queries 15d, fail-contextd-v1 21d) are needs_check: F1 must badge them, never present them as settled fact.',
   },
   {
     query: 'SHOW experiments WHERE stage = "ADOPTED"',
     label: 'What survived contact with reality',
     why: 'The explore-to-adopt pipeline, proven.',
-    expectedCount: 1,
+    expectedCount: 4,
   },
   {
     query: 'SHOW experiments WHERE stage = "ABANDONED"',
@@ -73,8 +79,9 @@ export const STARTER_QUERIES: StarterQuery[] = [
   {
     query: 'WITHOUT python',
     label: 'Remove Python. Watch what breaks.',
-    why: 'Ablation preview: the skill with the widest evidence fan. Maximum damage.',
+    why: 'Ablation preview: which evidence loses Python, and which decisions lose their only support.',
     expectedCount: 0, // ablation returns a damage receipt, not rows
+    note: 'Ablation is evidence coverage, not capability: WITHOUT python means these records lose Python as evidence, never that the engineer cannot engineer. F1 receipt must name orphaned decisions, not just counts.',
   },
 ];
 
