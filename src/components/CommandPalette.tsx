@@ -23,7 +23,12 @@ export default function CommandPalette() {
       if (e.key === 'Escape') setOpen(false);
     };
     window.addEventListener('keydown', onKey);
-    return () => window.removeEventListener('keydown', onKey);
+    const onOpenEvent = () => setOpen(true);
+    window.addEventListener('checkpoint:palette-open', onOpenEvent);
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      window.removeEventListener('checkpoint:palette-open', onOpenEvent);
+    };
   }, []);
 
   useEffect(() => {

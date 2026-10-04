@@ -1,151 +1,105 @@
-import React from "react";
-import { motion } from "framer-motion";
-import { Brain, Database, Code } from "lucide-react";
+import { useRef } from 'react';
+import {
+  motion,
+  useMotionValue,
+  useReducedMotion,
+  useScroll,
+  useSpring,
+  useTransform,
+  type MotionValue,
+} from 'motion/react';
+import LossCanvas from './LossCanvas';
+import { scrollToId } from '../lib/scroll';
 
-const Hero = () => {
-    const keywords = [
-        "Generative AI",
-        "Neural Networks",
-        "Machine Learning",
-        "Data Science",
-        "Software Development",
-        "Backend Development",
-    ];
+/** The single magnetic CTA on the page. Transform-only spring. */
+function MagneticButton({
+  onClick,
+  children,
+}: {
+  onClick: () => void;
+  children: string;
+}) {
+  const reduce = useReducedMotion();
+  const x = useMotionValue(0);
+  const y = useMotionValue(0);
+  const sx = useSpring(x, { stiffness: 200, damping: 18 });
+  const sy = useSpring(y, { stiffness: 200, damping: 18 });
 
-    return (
-        // Use base background, add padding top to account for fixed header
-        <section className="min-h-screen flex items-center justify-center bg-light-bg dark:bg-dark-bg pt-24 md:pt-32 pb-16">
-            <div className="container mx-auto px-4">
-                <div className="max-w-4xl mx-auto text-center">
-                    {/* Use fadeInUp animation from config */}
-                    <motion.div
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            hidden: { opacity: 0 },
-                            visible: {
-                                opacity: 1,
-                                transition: { staggerChildren: 0.1, delayChildren: 0.1 },
-                            },
-                        }}
-                    >
-                        <motion.h1
-                            className="text-4xl md:text-6xl font-bold mb-6 text-light-text dark:text-dark-text"
-                            variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-                            }}
-                        >
-                            Hi, I'm{" "}
-                            {/* Updated gradient */}
-                            <span className="bg-gradient-to-r from-light-primary to-light-secondary dark:from-dark-primary dark:to-dark-secondary bg-clip-text text-transparent">
-                                Santhosh Sachin
-                            </span>
-                        </motion.h1>
-                        <motion.p
-                            className="text-xl md:text-2xl text-light-text/80 dark:text-dark-text/80 mb-8"
-                             variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-                            }}
-                        >
-                            Innovating at the intersection of backend systems,
-                            AI, and data-driven solutions
-                        </motion.p>
-                        <motion.p
-                            className="text-xl md:text-2xl text-light-text/80 dark:text-dark-text/80 mb-12" // Increased margin bottom
-                             variants={{
-                                hidden: { opacity: 0, y: 20 },
-                                visible: { opacity: 1, y: 0, transition: { duration: 0.6, ease: "easeOut" } },
-                            }}
-                        >
-                            I only believe in Jassi Bhaii, because...
-                        </motion.p>
-                    </motion.div>
+  return (
+    <motion.button
+      onClick={onClick}
+      style={reduce ? undefined : { x: sx, y: sy }}
+      onMouseMove={(e) => {
+        if (reduce || window.matchMedia('(pointer: coarse)').matches) return;
+        const r = e.currentTarget.getBoundingClientRect();
+        x.set((e.clientX - (r.left + r.width / 2)) * 0.25);
+        y.set((e.clientY - (r.top + r.height / 2)) * 0.25);
+      }}
+      onMouseLeave={() => {
+        x.set(0);
+        y.set(0);
+      }}
+      whileTap={{ scale: 0.98 }}
+      className="inline-block bg-signal px-6 py-3 font-mono text-sm tracking-[0.12em] text-ink"
+    >
+      {children}
+    </motion.button>
+  );
+}
 
-                    {/* Stagger children animation for keywords */}
-                    <motion.div
-                        className="flex flex-wrap justify-center gap-3 mb-16" // Increased margin bottom
-                        initial="hidden"
-                        animate="visible"
-                        variants={{
-                            hidden: { opacity: 0 },
-                            visible: {
-                                opacity: 1,
-                                transition: { staggerChildren: 0.05 },
-                            },
-                        }}
-                    >
-                        {keywords.map((keyword) => (
-                            <motion.span
-                                key={keyword}
-                                className="px-4 py-2 bg-light-card dark:bg-dark-card rounded-full border border-light-border dark:border-dark-border text-light-text/90 dark:text-dark-text/90 text-sm font-medium shadow-sm hover:shadow-md hover:border-light-primary/50 dark:hover:border-dark-primary/50 transition-all duration-200 cursor-default"
-                                variants={{
-                                    hidden: { opacity: 0, y: 10 },
-                                    visible: { opacity: 1, y: 0 },
-                                }}
-                                whileHover={{ y: -2 }} // Subtle lift on hover
-                            >
-                                {keyword}
-                            </motion.span>
-                        ))}
-                    </motion.div>
+/**
+ * Split hero: left type, right loss canvas. Must fit the viewport —
+ * headline 2 lines max, subtext 12 words, CTAs visible without scroll.
+ */
+export default function Hero({ run }: { run: { progress: MotionValue<number> } }) {
+  const reduce = useReducedMotion();
+  const sectionRef = useRef<HTMLElement>(null);
+  const { scrollYProgress } = useScroll({
+    target: sectionRef,
+    offset: ['start start', 'end start'],
+  });
+  const canvasY = useTransform(scrollYProgress, [0, 1], [0, 80]);
+  const canvasOpacity = useTransform(scrollYProgress, [0, 1], [1, 0.25]);
 
-                    {/* Stagger children animation for icons */}
-                    <motion.div
-                        className="flex flex-col md:flex-row justify-center items-center md:space-x-12 space-y-8 md:space-y-0"
-                        initial="hidden"
-                        animate="visible"
-                         variants={{
-                            hidden: { opacity: 0 },
-                            visible: {
-                                opacity: 1,
-                                transition: { staggerChildren: 0.1, delayChildren: 0.5 }, // Delay after text/keywords
-                            },
-                        }}
-                    >
-                        {/* Icon Section 1: AI */}
-                        <motion.div
-                            className="text-center"
-                            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-                        >
-                            <div className="w-16 h-16 bg-light-primary/10 dark:bg-dark-primary/10 rounded-full flex items-center justify-center mx-auto mb-3 border border-light-primary/30 dark:border-dark-primary/30">
-                                <Brain className="w-8 h-8 text-light-primary dark:text-dark-primary" />
-                            </div>
-                            <p className="text-sm text-light-text dark:text-dark-text font-medium">AI Research</p>
-                        </motion.div>
-
-                        {/* Icon Section 2: Backend */}
-                         <motion.div
-                            className="text-center"
-                            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-                        >
-                            <div className="w-16 h-16 bg-light-secondary/10 dark:bg-dark-secondary/10 rounded-full flex items-center justify-center mx-auto mb-3 border border-light-secondary/30 dark:border-dark-secondary/30">
-                                <Database className="w-8 h-8 text-light-secondary dark:text-dark-secondary" />
-                            </div>
-                            <p className="text-sm text-light-text dark:text-dark-text font-medium">
-                                Backend Systems
-                            </p>
-                        </motion.div>
-
-                        {/* Icon Section 3: Development */}
-                         <motion.div
-                            className="text-center"
-                            variants={{ hidden: { opacity: 0, y: 20 }, visible: { opacity: 1, y: 0 } }}
-                            whileHover={{ scale: 1.05, transition: { duration: 0.2 } }}
-                        >
-                            <div className="w-16 h-16 bg-light-accent/10 dark:bg-dark-accent/10 rounded-full flex items-center justify-center mx-auto mb-3 border border-light-accent/30 dark:border-dark-accent/30">
-                                <Code className="w-8 h-8 text-light-accent dark:text-dark-accent" />
-                            </div>
-                            <p className="text-sm text-light-text dark:text-dark-text font-medium">Development</p>
-                        </motion.div>
-                    </motion.div> {/* <-- Added missing closing tag here */}
-                </div>
-            </div>
-        </section>
-    );
-};
-
-export default Hero;
+  return (
+    <section
+      ref={sectionRef}
+      className="flex min-h-[100dvh] items-center pt-24 pb-16"
+    >
+      <div className="mx-auto grid w-full max-w-6xl items-center gap-10 px-4 md:grid-cols-2">
+        <motion.div
+          initial={reduce ? false : { opacity: 0, y: 24 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
+        >
+          <p className="font-mono text-xs tracking-[0.25em] text-signal">
+            TRAINING RUN — PUBLIC LOG
+          </p>
+          <h1 className="mt-4 font-display text-4xl font-bold leading-none tracking-tight md:text-6xl">
+            Santhosh Sachin trains models in public.
+          </h1>
+          <p className="mt-5 max-w-[45ch] leading-relaxed text-ink/70 dark:text-paper/70">
+            AI engineer building LLM systems and backends. Every scroll is
+            another epoch.
+          </p>
+          <div className="mt-8 flex flex-wrap items-center gap-4">
+            <MagneticButton onClick={() => scrollToId('checkpoints')}>
+              View checkpoints
+            </MagneticButton>
+            <span className="font-mono text-xs tracking-[0.18em] text-ink/50 dark:text-paper/50">
+              or press ⌘K
+            </span>
+          </div>
+        </motion.div>
+        <motion.div
+          style={reduce ? undefined : { y: canvasY, opacity: canvasOpacity }}
+          className="h-72 w-full md:h-[420px]"
+          aria-label="Loss landscape with descent path"
+          role="img"
+        >
+          <LossCanvas progress={run.progress} />
+        </motion.div>
+      </div>
+    </section>
+  );
+}

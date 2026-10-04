@@ -1,119 +1,87 @@
-import React, { useCallback } from 'react';
-import { Menu, X, Github, Linkedin, Mail, Sun, Moon } from 'lucide-react';
+import { useState } from 'react';
+import { Menu, X, Sun, Moon } from 'lucide-react';
+import { NAV } from '../lib/content.placeholders';
+import { scrollToId } from '../lib/scroll';
 
 interface HeaderProps {
   darkMode: boolean;
   toggleDarkMode: () => void;
 }
 
-const Header: React.FC<HeaderProps> = ({ darkMode, toggleDarkMode }) => {
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
+/**
+ * Slim run-console HUD: readout sits above, this bar holds mark,
+ * section nav, theme toggle, and the palette trigger. One line, ≤72px.
+ */
+export default function Header({ darkMode, toggleDarkMode }: HeaderProps) {
+  const [open, setOpen] = useState(false);
 
-  const scrollToSection = useCallback((id: string) => {
-    const element = document.getElementById(id);
-    if (element) {
-      element.scrollIntoView({
-        behavior: 'smooth',
-        block: 'start'
-      });
-    }
-  }, []);
-
-  const navItems = [
-    { label: 'About', id: 'about' },
-    { label: 'Experience', id: 'experience' },
-    { label: 'Projects', id: 'projects' },
-    { label: 'Skills', id: 'skills' },
-    { label: 'Blog', id: 'blog' },
-    { label: 'Contact', id: 'contact' },
-  ];
+  const go = (id: string) => {
+    setOpen(false);
+    requestAnimationFrame(() => scrollToId(id));
+  };
 
   return (
-    <header className="fixed w-full bg-light-bg/90 dark:bg-dark-bg/90 backdrop-blur-md z-50 border-b border-light-border dark:border-dark-border transition-colors duration-300">
-      <div className="container mx-auto px-4 py-4">
-        <nav className="flex items-center justify-between">
-          {/* Updated Logo Gradient */}
-          <a href="#" className="text-2xl font-bold bg-gradient-to-r from-light-primary to-light-secondary dark:from-dark-primary dark:to-dark-secondary bg-clip-text text-transparent">
-            SS
-          </a>
+    <header className="fixed inset-x-0 top-7 z-[70] border-b border-ink/15 bg-paper/90 backdrop-blur-md dark:border-paper/15 dark:bg-ink/90">
+      <nav className="mx-auto flex h-11 max-w-6xl items-center justify-between px-4" aria-label="Sections">
+        <button
+          onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+          className="font-display text-lg font-bold tracking-tight"
+          aria-label="Back to top"
+        >
+          SS<span className="text-signal">/</span>
+        </button>
 
-          {/* Desktop Navigation */}
-          <div className="hidden md:flex items-center space-x-8">
-            {navItems.map((item) => (
-              <button
-                key={item.label}
-                onClick={() => scrollToSection(item.id)}
-                className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-colors duration-200 font-medium"
-              >
-                {item.label}
-              </button>
-            ))}
-          </div>
-
-          {/* Theme Toggle and Social Links */}
-          <div className="hidden md:flex items-center space-x-6">
-            {/* Updated Theme Toggle */}
+        <div className="hidden items-center gap-6 md:flex">
+          {NAV.map((item) => (
             <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-light-secondary/20 dark:bg-dark-secondary/20 text-light-secondary dark:text-dark-secondary hover:bg-light-secondary/30 dark:hover:bg-dark-secondary/30 transition-colors duration-200"
-              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+              key={item.id}
+              onClick={() => go(item.id)}
+              className="font-mono text-xs tracking-[0.18em] text-ink/70 transition-colors hover:text-signal dark:text-paper/70"
             >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
+              {item.label}
             </button>
-            {/* Updated Social Links */}
-            <a href="https://github.com/SANTHOSH-SACHIN" target="_blank" rel="noopener noreferrer" className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-colors duration-200">
-              <Github size={20} />
-            </a>
-            <a href="https://www.linkedin.com/in/santhosh-sachin/" target="_blank" rel="noopener noreferrer" className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-colors duration-200">
-              <Linkedin size={20} />
-            </a>
-            <a href="mailto:santhosh.s.sachin@gmail.com" className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary transition-colors duration-200">
-              <Mail size={20} />
-            </a>
-          </div>
+          ))}
+        </div>
 
-          {/* Mobile Menu Button */}
-          <div className="md:hidden flex items-center space-x-4">
-             {/* Updated Mobile Theme Toggle */}
-            <button
-              onClick={toggleDarkMode}
-              className="p-2 rounded-full bg-light-secondary/20 dark:bg-dark-secondary/20 text-light-secondary dark:text-dark-secondary transition-colors duration-200"
-              aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
-            >
-              {darkMode ? <Sun size={20} /> : <Moon size={20} />}
-            </button>
-             {/* Updated Mobile Menu Button */}
-            <button
-              className="text-light-text dark:text-dark-text"
-              onClick={() => setIsMenuOpen(!isMenuOpen)}
-            >
-              {isMenuOpen ? <X size={24} /> : <Menu size={24} />}
-            </button>
-          </div>
-        </nav>
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => window.dispatchEvent(new Event('checkpoint:palette-open'))}
+            className="hidden border border-ink/25 px-2 py-1 font-mono text-xs text-ink/70 sm:block dark:border-paper/25 dark:text-paper/70"
+            aria-label="Open command palette"
+          >
+            ⌘K
+          </button>
+          <button
+            onClick={toggleDarkMode}
+            className="p-2 text-ink/70 transition-colors hover:text-signal dark:text-paper/70"
+            aria-label={darkMode ? 'Switch to light mode' : 'Switch to dark mode'}
+          >
+            {darkMode ? <Sun size={18} strokeWidth={1.5} /> : <Moon size={18} strokeWidth={1.5} />}
+          </button>
+          <button
+            className="p-2 text-ink/70 md:hidden dark:text-paper/70"
+            onClick={() => setOpen((o) => !o)}
+            aria-label={open ? 'Close menu' : 'Open menu'}
+            aria-expanded={open}
+          >
+            {open ? <X size={20} strokeWidth={1.5} /> : <Menu size={20} strokeWidth={1.5} />}
+          </button>
+        </div>
+      </nav>
 
-        {/* Mobile Menu */}
-        {isMenuOpen && (
-          <div className="md:hidden absolute top-full left-0 right-0 bg-light-card dark:bg-dark-card border-t border-light-border dark:border-dark-border shadow-lg">
-            <div className="flex flex-col p-4 space-y-4">
-              {navItems.map((item) => (
-                <button
-                  key={item.label}
-                  onClick={() => {
-                    scrollToSection(item.id);
-                    setIsMenuOpen(false);
-                  }}
-                  className="text-light-text dark:text-dark-text hover:text-light-primary dark:hover:text-dark-primary w-full text-left py-2 transition-colors duration-200"
-                >
-                  {item.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
+      {open && (
+        <div className="border-t border-ink/15 px-4 py-2 md:hidden dark:border-paper/15">
+          {NAV.map((item) => (
+            <button
+              key={item.id}
+              onClick={() => go(item.id)}
+              className="block w-full py-2 text-left font-mono text-sm tracking-[0.12em]"
+            >
+              {item.label}
+            </button>
+          ))}
+        </div>
+      )}
     </header>
   );
-};
-
-export default Header;
+}

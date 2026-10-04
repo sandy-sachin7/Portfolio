@@ -65,3 +65,23 @@
     scroll-behavior: auto;
   }
 }
+
+/* Log ticker: the ONE marquee. Seamless loop over duplicated content. */
+@keyframes ticker {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+.ticker-track {
+  animation: ticker 42s linear infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ticker-track {
+    animation: none;
+  }
+}
