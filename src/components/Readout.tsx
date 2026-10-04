@@ -35,10 +35,10 @@ export default function Readout({ run }: { run: RunProgress }) {
     >
       <span ref={epRef}>ep 00/24</span>
       <span className="hidden sm:inline" ref={lossRef}>
-        loss —
+        loss ...
       </span>
       <span className="hidden md:inline" ref={lrRef}>
-        lr —
+        lr ...
       </span>
       <span className="text-signal">● RUNNING</span>
     </div>

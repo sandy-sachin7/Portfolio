@@ -52,10 +52,12 @@ export default function Dossier() {
                   </dt>
                   <dd className="font-mono text-sm">
                     {fact.redacted ? (
-                      <span className="bg-ink px-6 text-transparent dark:bg-paper dark:text-transparent">
+                      <>
+                        <span className="bg-ink px-6 select-none dark:bg-paper" aria-hidden="true">
+                          redacted
+                        </span>
                         <span className="sr-only">{fact.value}</span>
-                        redacted
-                      </span>
+                      </>
                     ) : (
                       fact.value
                     )}

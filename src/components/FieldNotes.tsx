@@ -5,7 +5,7 @@ import { NOTES } from '../lib/content.placeholders';
 
 /**
  * Field notes as an editorial index: hairline rows, no cards.
- * Rows are articles, not links — no dead hrefs until URLs exist.
+ * Rows are articles, not links: no dead hrefs until URLs exist.
  */
 export default function FieldNotes() {
   const reduce = useReducedMotion();

@@ -48,7 +48,7 @@ function MagneticButton({
 }
 
 /**
- * Split hero: left type, right loss canvas. Must fit the viewport —
+ * Split hero: left type, right loss canvas. Viewport fit is law:
  * headline 2 lines max, subtext 12 words, CTAs visible without scroll.
  */
 export default function Hero({ run }: { run: { progress: MotionValue<number> } }) {
@@ -73,7 +73,7 @@ export default function Hero({ run }: { run: { progress: MotionValue<number> } }
           transition={{ duration: 0.7, ease: [0.16, 1, 0.3, 1] }}
         >
           <p className="font-mono text-xs tracking-[0.25em] text-signal">
-            TRAINING RUN — PUBLIC LOG
+            TRAINING RUN // PUBLIC LOG
           </p>
           <h1 className="mt-4 font-display text-4xl font-bold leading-none tracking-tight md:text-6xl">
             Santhosh Sachin trains models in public.

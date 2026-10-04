@@ -27,7 +27,7 @@ export default function Ablations() {
                 {a.period}
               </p>
               <h3 className="mt-2 font-display text-2xl font-bold tracking-tight md:text-3xl">
-                {a.role} <span className="text-ink/50 dark:text-paper/50">— {a.org}</span>
+                {a.role} <span className="text-ink/50 dark:text-paper/50">/ {a.org}</span>
               </h3>
               <ul className="mt-5 space-y-2">
                 {a.kept.map((line) => (

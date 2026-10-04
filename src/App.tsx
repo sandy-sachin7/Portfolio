@@ -47,7 +47,7 @@ function App() {
   }, []);
 
   return (
-    <div className="min-h-screen bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
+    <div className="min-h-dvh bg-paper font-sans text-ink antialiased dark:bg-ink dark:text-paper">
       <Analytics />
       <Grain />
       <Boot />
