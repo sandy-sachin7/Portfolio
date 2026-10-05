@@ -165,8 +165,10 @@ export default function App() {
 
       <footer className="border-t border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-6xl px-4 py-6">
-          <nav aria-label="Pre-saved queries">
-            <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <nav aria-label="Discovery index">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">discovery index</h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Start with a few questions worth asking.</p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
               {footerQueries.map((q) => (
                 <li key={q.label}>
                   <button
