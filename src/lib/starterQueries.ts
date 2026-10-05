@@ -46,11 +46,11 @@ export const STARTER_QUERIES: StarterQuery[] = [
     expectedCount: 5,
   },
   {
-    query: 'SHOW failures WHERE costDays > 14',
+    query: 'SHOW failures',
     label: 'Where you failed',
-    why: 'Vulnerability as data. Only the expensive postmortems survive this filter.',
-    expectedCount: 3,
-    note: 'All 3 rows (fail-tabular-baseline 20d, fail-relational-queries 15d, fail-contextd-v1 21d) are needs_check: F1 must badge them, never present them as settled fact.',
+    why: 'One published postmortem. Six more failures are indexed but need verification before they appear as fact.',
+    expectedCount: 1,
+    note: 'Only fail-llama13b-math (asserted) is presentable. Six needs_check records are excluded by default and named in the receipt. WITH UNVERIFIED surfaces them badged.',
   },
   {
     query: 'SHOW experiments WHERE stage = "ADOPTED"',

@@ -1,5 +1,5 @@
 // ResultSurface (F2): LIST / READ / COMPARE. Semantic tables, honest receipts.
-import { useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import type { ExecResult, ResultRow } from '../query/executor';
 import type { CollectionName } from '../db/schema';
 import { getById, hasCaseFile, subOf, titleOf } from '../lib/rows';
@@ -9,7 +9,8 @@ import { Badge } from './Badge';
 
 interface Props {
   result: ExecResult | null;
-  lastQuery: string;
+  openId: string | null;
+  onOpenChange: (id: string | null) => void;
 }
 
 function RowButton({ row, onOpen }: { row: ResultRow; onOpen: (r: ResultRow) => void }) {
@@ -61,9 +62,20 @@ function RowsList({ rows, onOpen }: { rows: ResultRow[]; onOpen: (r: ResultRow) 
   );
 }
 
-export function ResultSurface({ result, lastQuery }: Props) {
-  const [openId, setOpenId] = useState<string | null>(null);
-  useEffect(() => setOpenId(null), [lastQuery]);
+export function ResultSurface({ result, openId, onOpenChange }: Props) {
+  // Close the READ view only when the open row is gone from the new result,
+  // so a flagship card can run its query and open its case file in one gesture.
+  useEffect(() => {
+    if (
+      result &&
+      result.ok &&
+      result.kind === 'rows' &&
+      openId &&
+      !result.rows.some((r) => `${r.collection}/${r.id}` === openId)
+    ) {
+      onOpenChange(null);
+    }
+  }, [result, openId, onOpenChange]);
 
   if (!result) {
     return <p className="px-4 py-8 font-mono text-sm text-zinc-600 dark:text-zinc-400">running…</p>;
@@ -90,7 +102,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
       <div>
         <button
           type="button"
-          onClick={() => setOpenId(null)}
+          onClick={() => onOpenChange(null)}
           className="px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
         >
           ← back to {result.kind === 'rows' ? `${result.rows.length} rows` : 'results'}
@@ -110,7 +122,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
             {result.rows.length} row{result.rows.length === 1 ? '' : 's'}
             {result.excluded.length > 0 && ` · ${result.excluded.length} excluded (see inspector)`}
           </p>
-          <RowsList rows={result.rows} onOpen={(r) => setOpenId(`${r.collection}/${r.id}`)} />
+          <RowsList rows={result.rows} onOpen={(r) => onOpenChange(`${r.collection}/${r.id}`)} />
         </div>
       );
     case 'schema':
