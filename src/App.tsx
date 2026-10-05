@@ -1,6 +1,6 @@
 // App (F2): CAREER.DB shell. Identity rail, omnibar, results, inspector, index footer.
 // Concept #1 presentation components are deleted; the frozen engine is untouched.
-import { useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { Analytics } from '@vercel/analytics/react';
 import { db } from './db/dataset';
 import { STARTER_QUERIES } from './lib/starterQueries';
@@ -10,6 +10,7 @@ import Grain from './components/Grain';
 import { Omnibar } from './components/Omnibar';
 import { ResultSurface } from './components/ResultSurface';
 import { Inspector } from './components/Inspector';
+import { FirstScreen } from './components/FirstScreen';
 import { RecruiterSheet } from './components/RecruiterSheet';
 
 const BOOT_QUERY = 'SHOW highlights LIMIT 3';
@@ -89,6 +90,16 @@ export default function App() {
 
   const footerQueries = STARTER_QUERIES.filter((q) => FOOTER_INDEX.includes(q.label));
 
+  // READ view state lives here so flagship cards open a case file in one gesture:
+  // run the query, then point at the row. The surface closes it only when a
+  // later result no longer contains the open row.
+  const [openId, setOpenId] = useState<string | null>(null);
+  const handleOpenChange = useCallback((id: string | null) => setOpenId(id), []);
+  const openCase = (projectId: string) => {
+    run('SHOW projects');
+    setOpenId(`projects/${projectId}`);
+  };
+
   return (
     <div className="min-h-dvh bg-paper font-body text-ink dark:bg-ink dark:text-paper">
       <Grain />
@@ -130,25 +141,34 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-4">
-        <Omnibar
-          input={input}
-          onInput={setInput}
-          onRun={run}
-          parseError={state.parseError}
-          lastQuery={state.lastQuery}
-        />
-        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_19rem]">
-          <div className="min-w-0">
-            <ResultSurface result={state.result} lastQuery={state.lastQuery} />
+        <FirstScreen onOpenCase={openCase} onRecruiter={openSheet} />
+        <section aria-label="Explore career.db" id="explore" className="mt-8 scroll-mt-4">
+          <Omnibar
+            input={input}
+            onInput={setInput}
+            onRun={run}
+            parseError={state.parseError}
+            lastQuery={state.lastQuery}
+          />
+          <div className="mt-4 min-w-0">
+            <ResultSurface
+              result={state.result}
+              openId={openId}
+              onOpenChange={handleOpenChange}
+            />
           </div>
-          <Inspector plan={state.plan} result={state.result} lastQuery={state.lastQuery} />
-        </div>
+          <div className="mt-6 border-t border-zinc-200 pt-4 dark:border-zinc-800">
+            <Inspector plan={state.plan} result={state.result} lastQuery={state.lastQuery} />
+          </div>
+        </section>
       </main>
 
       <footer className="border-t border-zinc-200 dark:border-zinc-800">
         <div className="mx-auto max-w-6xl px-4 py-6">
-          <nav aria-label="Pre-saved queries">
-            <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+          <nav aria-label="Discovery index">
+            <h2 className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">discovery index</h2>
+            <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">Start with a few questions worth asking.</p>
+            <ul className="mt-2 grid grid-cols-1 gap-1 sm:grid-cols-2">
               {footerQueries.map((q) => (
                 <li key={q.label}>
                   <button
