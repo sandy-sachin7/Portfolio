@@ -47,34 +47,38 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
         <label htmlFor="omnibar" className="sr-only">
           Query the career database
         </label>
-        <div className="flex items-stretch gap-0">
-          <span aria-hidden="true" className="pl-4 pr-2 py-3 font-mono text-sm text-[#ff4d00] select-none">
-            &gt;
-          </span>
-          <input
-            id="omnibar"
-            value={input}
-            onChange={(e) => onInput(e.target.value)}
-            spellCheck={false}
-            autoComplete="off"
-            placeholder='try: SHOW failures WHERE costDays > 14'
-            className="w-full bg-transparent py-3 font-mono text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600 dark:placeholder:text-zinc-400 focus:outline-none"
-          />
-          <button
-            type="submit"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
-          >
-            run
-          </button>
-          <button
-            type="button"
-            onClick={copyLink}
-            disabled={!lastQuery}
-            aria-label="Copy shareable link to this query"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
-          >
-            {copied ? 'copied' : 'copy link'}
-          </button>
+        <div className="flex flex-col sm:flex-row sm:items-stretch">
+          <div className="flex flex-1 items-stretch">
+            <span aria-hidden="true" className="pl-4 pr-2 py-3 font-mono text-sm text-[#ff4d00] select-none">
+              &gt;
+            </span>
+            <input
+              id="omnibar"
+              value={input}
+              onChange={(e) => onInput(e.target.value)}
+              spellCheck={false}
+              autoComplete="off"
+              placeholder='try: SHOW failures WHERE costDays > 14'
+              className="w-full bg-transparent py-3 font-mono text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600 dark:placeholder:text-zinc-400 focus:outline-none"
+            />
+          </div>
+          <div className="flex flex-row border-t border-zinc-200 dark:border-zinc-800 sm:border-t-0">
+            <button
+              type="submit"
+              className="flex-1 px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] sm:flex-none sm:py-0"
+            >
+              run
+            </button>
+            <button
+              type="button"
+              onClick={copyLink}
+              disabled={!lastQuery}
+              aria-label="Copy shareable link to this query"
+              className="flex-1 px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] sm:flex-none sm:py-0"
+            >
+              {copied ? 'copied' : 'copy link'}
+            </button>
+          </div>
         </div>
       </form>
       <div aria-live="polite" className="px-4 pb-2 font-mono text-xs">

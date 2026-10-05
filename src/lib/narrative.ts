@@ -25,6 +25,19 @@ export const CONTEXTD_RELEASES: ReadonlyArray<{ version: string; date: string }>
   { version: 'v3.1.3', date: '2026-07-02' },
 ]; // Chronological. v3.0.2 backports the v3.0.3 security fix to the 3.0 line.
 
+/**
+ * Display milestones distilled from CONTEXTD_RELEASES. Notes use only
+ * verified release-note facts (read from the public releases page):
+ * v1.0.0 is the earliest listed release; v3.0.3 is the RUSTSEC-2026-0002 +
+ * FTS5-sanitization hardening; v3.1.3 is the latest daemon-stdin/health
+ * fix. No milestone descriptors beyond what the notes support.
+ */
+export const RELEASE_MILESTONES: ReadonlyArray<{ version: string; date: string; note: string }> = [
+  { version: 'v1.0.0', date: '2026-01-15', note: 'earliest release' },
+  { version: 'v3.0.3', date: '2026-01-15', note: 'security hardening' },
+  { version: 'v3.1.3', date: '2026-07-02', note: 'latest daemon fixes' },
+];
+
 export interface FlagshipProof {
   project: Project;
   /** First presentable decision in project order. Never a needs_check record. */

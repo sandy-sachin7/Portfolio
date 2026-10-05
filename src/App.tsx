@@ -113,7 +113,7 @@ export default function App() {
             <h1 className="truncate font-display text-base font-semibold tracking-tight">
               {recruiter.name} <span className="font-mono text-xs font-normal text-zinc-600 dark:text-zinc-400">/ career.db</span>
             </h1>
-            <p className="truncate text-[13px] text-zinc-600 dark:text-zinc-400">{recruiter.role}</p>
+            <p className="hidden truncate text-[13px] text-zinc-600 dark:text-zinc-400 sm:block">{recruiter.role}</p>
           </div>
           <div className="flex shrink-0 items-center gap-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
             <button
@@ -138,7 +138,7 @@ export default function App() {
       </header>
 
       <main className="mx-auto max-w-6xl px-4 py-4">
-        <FirstScreen onOpenCase={openCase} onRecruiter={openSheet} />
+        <FirstScreen onOpenCase={openCase} />
         <section aria-label="Explore career.db" id="explore" className="mt-8 scroll-mt-4">
           <Omnibar
             input={input}

@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/db/dataset';
 import { buildIndexes } from '../../src/db/indexes';
 import { isPresentable } from '../../src/db/validate';
-import { CONTEXTD_RELEASES, FLAGSHIP_IDS, flagshipProof, proofStrip } from '../../src/lib/narrative';
+import { CONTEXTD_RELEASES, FLAGSHIP_IDS, RELEASE_MILESTONES, flagshipProof, proofStrip } from '../../src/lib/narrative';
 import { clearCache, clearLog, execute, type AST } from '../../src/query/executor';
 import { parse } from '../../src/query/parser';
 
@@ -70,6 +70,14 @@ describe('Contextd release evidence (taste pass)', () => {
   it('release dates are chronological', () => {
     const dates = CONTEXTD_RELEASES.map((r) => r.date);
     expect([...dates].sort()).toEqual(dates);
+  });
+
+  it('release milestones resolve to verified list entries (no invented versions)', () => {
+    expect(RELEASE_MILESTONES).toHaveLength(3);
+    for (const m of RELEASE_MILESTONES) {
+      expect(CONTEXTD_RELEASES).toContainEqual({ version: m.version, date: m.date });
+      expect(m.note.length).toBeGreaterThan(0);
+    }
   });
 
   it('proof strip agrees with the release list (loud on drift)', () => {
