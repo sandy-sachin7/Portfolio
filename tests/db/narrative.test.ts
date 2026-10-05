@@ -4,7 +4,7 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { db } from '../../src/db/dataset';
 import { buildIndexes } from '../../src/db/indexes';
 import { isPresentable } from '../../src/db/validate';
-import { FLAGSHIP_IDS, flagshipProof } from '../../src/lib/narrative';
+import { CONTEXTD_RELEASES, FLAGSHIP_IDS, flagshipProof, proofStrip } from '../../src/lib/narrative';
 import { clearCache, clearLog, execute, type AST } from '../../src/query/executor';
 import { parse } from '../../src/query/parser';
 
@@ -57,6 +57,40 @@ describe('flagshipProof', () => {
 
   it('throws loudly on unknown project or missing evidence', () => {
     expect(() => flagshipProof(db, 'proj-nope')).toThrow();
+  });
+});
+
+describe('Contextd release evidence (taste pass)', () => {
+  it('lists exactly 10 verified releases with exact endpoints', () => {
+    expect(CONTEXTD_RELEASES).toHaveLength(10);
+    expect(CONTEXTD_RELEASES[0]).toEqual({ version: 'v1.0.0', date: '2026-01-15' });
+    expect(CONTEXTD_RELEASES[CONTEXTD_RELEASES.length - 1]).toEqual({ version: 'v3.1.3', date: '2026-07-02' });
+  });
+
+  it('release dates are chronological', () => {
+    const dates = CONTEXTD_RELEASES.map((r) => r.date);
+    expect([...dates].sort()).toEqual(dates);
+  });
+
+  it('proof strip agrees with the release list (loud on drift)', () => {
+    const items = proofStrip(db, 'proj-contextd');
+    const releases = items.find((i) => i.label === 'releases');
+    expect(releases?.value).toBe('10 releases, v1.0.0 through v3.1.3');
+    expect(releases?.url).toBe('https://github.com/sandy-sachin7/contextd/releases');
+  });
+
+  it('every proof-strip item links a real artifact URL', () => {
+    for (const id of FLAGSHIP_IDS) {
+      for (const item of proofStrip(db, id)) {
+        expect(item.url.startsWith('https://github.com/')).toBe(true);
+      }
+    }
+  });
+
+  it('shard strip carries the author-reported benchmark with qualifier', () => {
+    const items = proofStrip(db, 'proj-shard');
+    const bench = items.find((i) => i.label === 'push benchmark');
+    expect(bench?.value).toContain('author-reported');
   });
 });
 

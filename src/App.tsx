@@ -5,7 +5,6 @@ import { Analytics } from '@vercel/analytics/react';
 import { db } from './db/dataset';
 import { STARTER_QUERIES } from './lib/starterQueries';
 import { useQueryEngine } from './hooks/useQueryEngine';
-import { useIstClock } from './hooks/useIstClock';
 import Grain from './components/Grain';
 import { Omnibar } from './components/Omnibar';
 import { ResultSurface } from './components/ResultSurface';
@@ -46,7 +45,6 @@ export default function App() {
   const [announcement, setAnnouncement] = useState('');
   const recruiterBtnRef = useRef<HTMLButtonElement>(null);
   const { state, run } = useQueryEngine(BOOT_QUERY);
-  const clock = useIstClock();
   const recruiter = db.recruiter;
 
   // Keep the input box in sync when a footer/example/URL query runs.
@@ -118,7 +116,6 @@ export default function App() {
             <p className="truncate text-[13px] text-zinc-600 dark:text-zinc-400">{recruiter.role}</p>
           </div>
           <div className="flex shrink-0 items-center gap-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
-            <span aria-label="Current time in India">{clock} IST</span>
             <button
               type="button"
               ref={recruiterBtnRef}

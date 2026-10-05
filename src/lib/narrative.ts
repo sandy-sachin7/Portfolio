@@ -6,6 +6,25 @@ import { badgeFor, isPresentable, type BadgeKind } from '../db/validate';
 
 export const FLAGSHIP_IDS = ['proj-contextd', 'proj-shard'] as const;
 
+/**
+ * Contextd release history, verified against the public GitHub releases page
+ * (https://github.com/sandy-sachin7/contextd/releases) on 2026-10-05.
+ * Exactly 10 releases: six shipped 2026-01-15 (v1.0.0 through v3.0.1),
+ * then steady hardening to v3.1.3 on 2026-07-02.
+ */
+export const CONTEXTD_RELEASES: ReadonlyArray<{ version: string; date: string }> = [
+  { version: 'v1.0.0', date: '2026-01-15' },
+  { version: 'v1.1.0', date: '2026-01-15' },
+  { version: 'v2.0.0', date: '2026-01-15' },
+  { version: 'v3.0.0', date: '2026-01-15' },
+  { version: 'v3.0.1', date: '2026-01-15' },
+  { version: 'v3.0.3', date: '2026-01-15' },
+  { version: 'v3.1.0', date: '2026-05-29' },
+  { version: 'v3.0.2', date: '2026-06-28' },
+  { version: 'v3.1.1', date: '2026-06-28' },
+  { version: 'v3.1.3', date: '2026-07-02' },
+]; // Chronological. v3.0.2 backports the v3.0.3 security fix to the 3.0 line.
+
 export interface FlagshipProof {
   project: Project;
   /** First presentable decision in project order. Never a needs_check record. */
@@ -57,8 +76,13 @@ export function proofStrip(database: CareerDB, projectId: string): ProofItem[] {
   if (projectId === 'proj-contextd') {
     if (project.verification !== 'verified') throw new Error('proof strip: contextd release range needs verified provenance');
     const [from, to] = releaseBounds(project.provenance.detail);
+    const first = CONTEXTD_RELEASES[0];
+    const last = CONTEXTD_RELEASES[CONTEXTD_RELEASES.length - 1];
+    if (from !== first.version || to !== last.version) {
+      throw new Error('proof strip: provenance release range disagrees with verified CONTEXTD_RELEASES');
+    }
     return [
-      { label: 'releases', value: `${from} – ${to}`, url: `${repoUrl}/releases` },
+      { label: 'releases', value: `${CONTEXTD_RELEASES.length} releases, ${from} through ${to}`, url: `${repoUrl}/releases` },
       fromDecision('dec-contextd-mcp', 'interface', 'MCP-native'),
       fromDecision('dec-contextd-local-first', 'design', 'local-first daemon'),
     ];
@@ -68,6 +92,7 @@ export function proofStrip(database: CareerDB, projectId: string): ProofItem[] {
       fromDecision('dec-shard-content-address', 'integrity', 'BLAKE3 content addressing'),
       fromDecision('dec-shard-rabin', 'chunking', 'Rabin'),
       fromDecision('dec-shard-p2p', 'distribution', 'peer-to-peer'),
+      { label: 'push benchmark', value: '10 GB in about 40s, author-reported', url: `${repoUrl}/tree/main/benchmarks` },
     ];
   }
   throw new Error(`no proof strip for ${projectId}`);
