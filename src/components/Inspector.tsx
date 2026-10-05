@@ -14,25 +14,35 @@ export function Inspector({ plan, result, lastQuery }: Props) {
   return (
     <aside aria-label="Query inspector" className="border-zinc-200 font-mono text-xs dark:border-zinc-800 lg:border-l lg:pl-4">
       <h2 className="text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-400">inspector</h2>
-      {stats ? (
-        <dl className="mt-2 space-y-1 text-zinc-600 dark:text-zinc-400">
-          <div className="flex justify-between gap-2"><dt>query</dt><dd className="truncate text-right text-zinc-900 dark:text-zinc-100">{lastQuery}</dd></div>
-          <div className="flex justify-between gap-2"><dt>returned</dt><dd className="text-[#ff4d00]">{stats.returned}</dd></div>
-          <div className="flex justify-between gap-2"><dt>scanned</dt><dd>{stats.scanned}</dd></div>
-          <div className="flex justify-between gap-2"><dt>excluded</dt><dd>{stats.excluded}</dd></div>
-          <div className="flex justify-between gap-2"><dt>time</dt><dd>{stats.ms.toFixed(2)} ms</dd></div>
-          <div className="flex justify-between gap-2"><dt>cache</dt><dd>{stats.cacheHit ? 'hit' : 'miss'}</dd></div>
-        </dl>
-      ) : (
-        <p className="mt-2 text-zinc-600 dark:text-zinc-400">no query yet</p>
-      )}
-      {plan.length > 0 && (
-        <div className="mt-3 border-t border-zinc-200 pt-2 dark:border-zinc-800">
-          {plan.map((line) => (
-            <p key={line} className="whitespace-pre-wrap break-words text-zinc-600 dark:text-zinc-400">{line}</p>
-          ))}
+      <details className="mt-2">
+        <summary className="cursor-pointer text-zinc-600 focus-visible:outline-2 focus-visible:outline-[#ff4d00] hover:text-[#9a3412] dark:text-zinc-400 dark:hover:text-[#ff4d00]">
+          view query plan
+        </summary>
+        {stats ? (
+          <dl className="mt-2 space-y-1 text-zinc-600 dark:text-zinc-400">
+            <div className="flex justify-between gap-2"><dt>query</dt><dd className="truncate text-right text-zinc-900 dark:text-zinc-100">{lastQuery}</dd></div>
+            <div className="flex justify-between gap-2"><dt>returned</dt><dd className="text-[#ff4d00]">{stats.returned}</dd></div>
+            <div className="flex justify-between gap-2"><dt>scanned</dt><dd>{stats.scanned}</dd></div>
+            <div className="flex justify-between gap-2"><dt>excluded</dt><dd>{stats.excluded}</dd></div>
+            <div className="flex justify-between gap-2"><dt>time</dt><dd>{stats.ms.toFixed(2)} ms</dd></div>
+            <div className="flex justify-between gap-2"><dt>cache</dt><dd>{stats.cacheHit ? 'hit' : 'miss'}</dd></div>
+          </dl>
+        ) : (
+          <p className="mt-2 text-zinc-600 dark:text-zinc-400">no query yet</p>
+        )}
+        {plan.length > 0 && (
+          <div className="mt-3 border-t border-zinc-200 pt-2 dark:border-zinc-800">
+            {plan.map((line) => (
+              <p key={line} className="whitespace-pre-wrap break-words text-zinc-600 dark:text-zinc-400">{line}</p>
+            ))}
+          </div>
+        )}
+        <div className="mt-3 border-t border-zinc-200 pt-2 text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+          <p>verified → no badge</p>
+          <p>asserted → ASSERTED</p>
+          <p>needs_check → excluded</p>
         </div>
-      )}
+      </details>
       {excluded.length > 0 && (
         <div className="mt-3 border-t border-zinc-200 pt-2 dark:border-zinc-800" aria-live="polite">
           <p className="text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-400">

@@ -190,7 +190,7 @@ export default function App() {
             <a href={recruiter.contact.github} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">github</a>
             <a href={recruiter.contact.linkedin} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">linkedin</a>
             <a href={recruiter.contact.resume} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">resume.pdf</a>
-            <span className="ml-auto">sha {BUILD_SHA}</span>
+            {BUILD_SHA !== 'dev' && <span className="ml-auto">sha {BUILD_SHA}</span>}
           </div>
         </div>
       </footer>

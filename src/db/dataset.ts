@@ -937,7 +937,7 @@ export const db: CareerDB = {
   recruiter: {
     name: 'Santhosh Sachin',
     role: 'Backend / Systems Engineer (ML systems depth)',
-    positioning: 'Backend, systems, and infrastructure engineer with serious ML/AI systems experience. Currently on enterprise backend at Optum; research background in applied graph ML.',
+    positioning: 'Backend and systems engineer building enterprise services, local-first developer tools, and applied ML infrastructure.',
     location: 'India',
     fieldVerification: {
       location: 'needs_check',
@@ -948,7 +948,7 @@ export const db: CareerDB = {
     proof: [
       'Enterprise backend at Optum/UH: Python + Go microservices for price estimation and claims-adjacent systems.',
       'Applied graph-ML research at Lam: temporal GNNs for supply-chain forecasting, backed by a $50K grant.',
-      'Ships systems tooling publicly: Contextd (local-first code-context daemon, 10+ releases past v3) and Shard (content-addressed ML artifact versioning).',
+      'Ships systems tooling publicly: Contextd (local-first code-context daemon, release history v1.0.0 through v3.1.3) and Shard (content-addressed ML artifact versioning).',
     ],
     projects: [
       { name: 'Contextd', line: 'Local-first semantic code-context daemon; MCP-native; iterated past v3.', url: 'https://github.com/sandy-sachin7/contextd' },
@@ -957,10 +957,10 @@ export const db: CareerDB = {
     ],
     experience: [
       { org: 'Optum / UnitedHealthcare', role: 'Backend Software Engineer', period: '2025 – present' },
-      { org: 'Lam Research', role: 'AI Research Intern', period: 'May 2024 – 2025 (exact end to confirm)' },
+      { org: 'Lam Research', role: 'AI Research Intern', period: 'May 2024' },
       { org: 'Fidelity Investments', role: 'Software Engineering Intern', period: 'Jun 2024 – Aug 2024' },
     ],
-    education: 'B.Tech CSE, Amrita Vishwa Vidyapeetham (graduated; 2025 year to confirm; CGPA 8.41/10)',
+    education: 'B.Tech CSE, Amrita Vishwa Vidyapeetham (graduated; CGPA 8.41/10)',
     contact: {
       email: 'santhosh.s.sachin@gmail.com',
       github: 'https://github.com/sandy-sachin7',

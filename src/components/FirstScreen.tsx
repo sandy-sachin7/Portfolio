@@ -2,8 +2,7 @@
 // Answers WHO / WHAT / PROOF / CONTACT without query syntax. Reads the
 // frozen dataset only. Flagship failures stay out: both are needs_check.
 import { db } from '../db/dataset';
-import { FLAGSHIP_IDS, flagshipProof } from '../lib/narrative';
-import { Badge } from './Badge';
+import { FLAGSHIP_IDS, flagshipProof, proofStrip } from '../lib/narrative';
 
 interface Props {
   onOpenCase: (projectId: string) => void;
@@ -42,14 +41,25 @@ export function FirstScreen({ onOpenCase, onRecruiter }: Props) {
       </div>
 
       <div className="mt-6 grid grid-cols-1 gap-4 md:grid-cols-2">
-        {proofs.map(({ project, decision, repoUrl, badge }) => (
+        {proofs.map(({ project, decision, repoUrl }) => (
           <article key={project.id} aria-labelledby={`flag-${project.id}`} className="border border-zinc-200 p-4 dark:border-zinc-800">
             <h3 id={`flag-${project.id}`} className="font-display text-lg font-semibold tracking-tight">
               {project.title}
             </h3>
-            <Badge badge={badge} />
             <p className="mt-2 text-sm leading-relaxed">{project.thesis}</p>
             <p className="mt-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">{project.stack.join(' / ')}</p>
+            <ul aria-label={`${project.title} evidence`} className="mt-3 flex flex-wrap gap-x-4 gap-y-1 border-t border-zinc-200 pt-3 font-mono text-xs dark:border-zinc-800">
+              {proofStrip(db, project.id).map((item) => (
+                <li key={item.label}>
+                  <a
+                    href={item.url}
+                    className="text-zinc-600 focus-visible:outline-2 focus-visible:outline-[#ff4d00] hover:text-[#9a3412] dark:text-zinc-400 dark:hover:text-[#ff4d00]"
+                  >
+                    {item.label}: <span className="text-zinc-900 dark:text-zinc-100">{item.value}</span>
+                  </a>
+                </li>
+              ))}
+            </ul>
             <div className="mt-3 border-t border-zinc-200 pt-3 dark:border-zinc-800">
               <p className="font-mono text-xs text-zinc-600 dark:text-zinc-400">one decision</p>
               <p className="mt-1 text-sm font-medium">{decision.title}</p>

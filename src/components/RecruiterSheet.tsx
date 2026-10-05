@@ -44,10 +44,8 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
     return () => document.removeEventListener('keydown', onKeyDown, true);
   }, [onClose]);
 
-  const locationNote =
-    recruiter.fieldVerification.location === 'verified'
-      ? recruiter.location
-      : `${recruiter.location} (location to confirm)`;
+  // Unverified location is omitted from the public sheet, never hedged in prose.
+  const showLocation = recruiter.fieldVerification.location === 'verified';
 
   return (
     <div className="fixed inset-0 z-50 overflow-y-auto bg-paper text-ink dark:bg-ink dark:text-paper">
@@ -80,7 +78,9 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
         </div>
 
         <p className="mt-4 text-[15px] leading-relaxed">{recruiter.positioning}</p>
-        <p className="mt-1 font-mono text-xs text-zinc-600 dark:text-zinc-400">{locationNote}</p>
+        {showLocation && (
+          <p className="mt-1 font-mono text-xs text-zinc-600 dark:text-zinc-400">{recruiter.location}</p>
+        )}
 
         <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
           proof
