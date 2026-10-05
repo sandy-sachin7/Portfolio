@@ -35,7 +35,7 @@ export function CompareView({ result }: { result: Extract<ExecResult, { kind: 'c
           const isDiff = diff.has(k);
           return (
             <div key={k} className="grid grid-cols-[1fr_1fr] gap-0 border-t border-zinc-200 md:grid-cols-[12rem_1fr_1fr] dark:border-zinc-800">
-              <dt className="hidden px-0 py-2 font-mono text-xs uppercase tracking-wider text-zinc-400 md:block dark:text-zinc-500">
+              <dt className="hidden px-0 py-2 font-mono text-xs uppercase tracking-wider text-zinc-600 md:block dark:text-zinc-400">
                 {k}
               </dt>
               {[l[k], r[k]].map((v, i) => (
@@ -45,7 +45,7 @@ export function CompareView({ result }: { result: Extract<ExecResult, { kind: 'c
                     isDiff ? 'bg-[#ff4d00]/[0.07] text-zinc-900 dark:text-zinc-100' : 'text-zinc-600 dark:text-zinc-400'
                   }`}
                 >
-                  <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-400 md:hidden dark:text-zinc-500">{k}: </span>
+                  <span className="font-mono text-[11px] uppercase tracking-wider text-zinc-600 md:hidden dark:text-zinc-400">{k}: </span>
                   {fmt(v)}
                 </dd>
               ))}
@@ -53,7 +53,7 @@ export function CompareView({ result }: { result: Extract<ExecResult, { kind: 'c
           );
         })}
       </dl>
-      <p className="mt-3 font-mono text-xs text-zinc-400 dark:text-zinc-500">
+      <p className="mt-3 font-mono text-xs text-zinc-600 dark:text-zinc-400">
         {differingFields.length} differing field{differingFields.length === 1 ? '' : 's'} highlighted: {differingFields.join(', ') || 'none'}
       </p>
     </div>

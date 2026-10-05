@@ -10,7 +10,7 @@ const arr = (v: unknown): string[] => (Array.isArray(v) ? v.filter((x): x is str
 function Section({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section className="border-t border-zinc-200 pt-3 first:border-t-0 first:pt-0 dark:border-zinc-800">
-      <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">{label}</h4>
+      <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-400">{label}</h4>
       <div className="mt-2 text-[15px] leading-relaxed text-zinc-800 dark:text-zinc-200">{children}</div>
     </section>
   );
@@ -67,7 +67,7 @@ function ProjectFile({ row }: { row: ResultRow }) {
   return (
     <div className="space-y-5">
       <div>
-        <p className="font-mono text-xs text-zinc-400 dark:text-zinc-500">
+        <p className="font-mono text-xs text-zinc-600 dark:text-zinc-400">
           {s(p['status'])} · {s(p['era'])}
           {p['flagship'] ? ' · flagship' : ''}
         </p>
@@ -100,7 +100,7 @@ function DefinitionFile({ row, fields }: { row: ResultRow; fields: Array<[string
           {fields.map(([label, value]) =>
             value ? (
               <div key={label}>
-                <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">{label}</dt>
+                <dt className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-400">{label}</dt>
                 <dd className="mt-0.5">{value}</dd>
               </div>
             ) : null,

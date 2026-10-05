@@ -60,7 +60,7 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
       >
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+            <p className="font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
               recruiter sheet · 30 seconds
             </p>
             <h1 className="mt-1 font-display text-2xl font-semibold tracking-tight">
@@ -80,9 +80,9 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
         </div>
 
         <p className="mt-4 text-[15px] leading-relaxed">{recruiter.positioning}</p>
-        <p className="mt-1 font-mono text-xs text-zinc-500 dark:text-zinc-400">{locationNote}</p>
+        <p className="mt-1 font-mono text-xs text-zinc-600 dark:text-zinc-400">{locationNote}</p>
 
-        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
           proof
         </h2>
         <ul className="mt-2 space-y-2">
@@ -93,7 +93,7 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
           ))}
         </ul>
 
-        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
           projects
         </h2>
         <ul className="mt-2 divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -114,7 +114,7 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
           ))}
         </ul>
 
-        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
           experience
         </h2>
         <ul className="mt-2 divide-y divide-zinc-200 dark:divide-zinc-800">
@@ -122,14 +122,14 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
             <li key={e.org} className="py-2 text-sm">
               <span className="font-display font-medium">{e.org}</span>
               <span className="ml-2 text-zinc-600 dark:text-zinc-400">{e.role}</span>
-              <span className="ml-2 font-mono text-xs text-zinc-500 dark:text-zinc-500">{e.period}</span>
+              <span className="ml-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">{e.period}</span>
             </li>
           ))}
         </ul>
 
         <p className="mt-4 text-sm text-zinc-600 dark:text-zinc-400">{recruiter.education}</p>
 
-        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-500 dark:text-zinc-400">
+        <h2 className="mt-6 font-mono text-xs uppercase tracking-widest text-zinc-600 dark:text-zinc-400">
           contact
         </h2>
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm">

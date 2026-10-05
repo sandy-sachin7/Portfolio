@@ -29,10 +29,10 @@ function RowButton({ row, onOpen }: { row: ResultRow; onOpen: (r: ResultRow) => 
           {openable && <span aria-hidden="true" className="mr-2 text-[#ff4d00]">›</span>}
           {titleOf(row.collection, row.record)}
         </span>
-        <span className="shrink-0 font-mono text-[11px] text-zinc-400 dark:text-zinc-600">{row.id}</span>
+        <span className="shrink-0 font-mono text-[11px] text-zinc-600 dark:text-zinc-400">{row.id}</span>
       </span>
       {subOf(row.collection, row.record) && (
-        <span className="mt-0.5 block truncate text-sm text-zinc-500 dark:text-zinc-400">{subOf(row.collection, row.record)}</span>
+        <span className="mt-0.5 block truncate text-sm text-zinc-600 dark:text-zinc-400">{subOf(row.collection, row.record)}</span>
       )}
       <Badge badge={row.badge} />
     </button>
@@ -44,7 +44,7 @@ function RowsList({ rows, onOpen }: { rows: ResultRow[]; onOpen: (r: ResultRow) 
     return (
       <div className="px-4 py-8">
         <p className="text-zinc-900 dark:text-zinc-100">0 rows.</p>
-        <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+        <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
           Nothing matches with presentable evidence. Try removing a filter, or run with WITH UNVERIFIED to see candidate evidence.
         </p>
       </div>
@@ -66,14 +66,14 @@ export function ResultSurface({ result, lastQuery }: Props) {
   useEffect(() => setOpenId(null), [lastQuery]);
 
   if (!result) {
-    return <p className="px-4 py-8 font-mono text-sm text-zinc-400 dark:text-zinc-600">running…</p>;
+    return <p className="px-4 py-8 font-mono text-sm text-zinc-600 dark:text-zinc-400">running…</p>;
   }
   if (!result.ok) {
     return (
       <div className="px-4 py-8" role="alert">
         <p className="font-mono text-sm text-red-600 dark:text-red-400">{result.error.message}</p>
         {result.error.suggestion && (
-          <p className="mt-1 font-mono text-sm text-zinc-500 dark:text-zinc-400">try: {result.error.suggestion}</p>
+          <p className="mt-1 font-mono text-sm text-zinc-600 dark:text-zinc-400">try: {result.error.suggestion}</p>
         )}
       </div>
     );
@@ -91,7 +91,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
         <button
           type="button"
           onClick={() => setOpenId(null)}
-          className="px-4 py-3 font-mono text-sm text-zinc-500 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+          className="px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
         >
           ← back to {result.kind === 'rows' ? `${result.rows.length} rows` : 'results'}
         </button>
@@ -106,7 +106,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
     case 'rows':
       return (
         <div aria-live="polite">
-          <p className="px-4 py-2 font-mono text-xs text-zinc-400 dark:text-zinc-500">
+          <p className="px-4 py-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">
             {result.rows.length} row{result.rows.length === 1 ? '' : 's'}
             {result.excluded.length > 0 && ` · ${result.excluded.length} excluded (see inspector)`}
           </p>
@@ -116,7 +116,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
     case 'schema':
       return (
         <dl className="px-4 py-4">
-          <dt className="font-mono text-xs uppercase tracking-wider text-zinc-400 dark:text-zinc-500">table {result.collection}</dt>
+          <dt className="font-mono text-xs uppercase tracking-wider text-zinc-600 dark:text-zinc-400">table {result.collection}</dt>
           {result.fields.map((f) => (
             <dd key={f} className="border-t border-zinc-200 py-1.5 font-mono text-sm first:mt-2 dark:border-zinc-800">{f}</dd>
           ))}
@@ -125,12 +125,12 @@ export function ResultSurface({ result, lastQuery }: Props) {
     case 'log':
       return (
         <ol className="px-4 py-4 font-mono text-[13px]">
-          {result.entries.length === 0 && <li className="text-zinc-400 dark:text-zinc-600">log is empty</li>}
+          {result.entries.length === 0 && <li className="text-zinc-600 dark:text-zinc-400">log is empty</li>}
           {result.entries.map((e, i) => (
             <li key={i} className="border-t border-zinc-200 py-1.5 first:border-t-0 dark:border-zinc-800">
-              <span className="text-zinc-400 dark:text-zinc-600">{e.t} </span>
+              <span className="text-zinc-600 dark:text-zinc-400">{e.t} </span>
               <span className="text-zinc-800 dark:text-zinc-200">{e.query}</span>{' '}
-              <span className="text-zinc-400 dark:text-zinc-600">→ {e.returned} rows, {e.ms.toFixed(1)}ms{e.cacheHit ? ', cache hit' : ''}</span>
+              <span className="text-zinc-600 dark:text-zinc-400">→ {e.returned} rows, {e.ms.toFixed(1)}ms{e.cacheHit ? ', cache hit' : ''}</span>
             </li>
           ))}
         </ol>
@@ -146,9 +146,9 @@ export function ResultSurface({ result, lastQuery }: Props) {
       return (
         <div className="px-4 py-4" aria-live="polite">
           <h3 className="font-display text-xl font-semibold tracking-tight">
-            WITHOUT {result.key} <span className="font-mono text-sm font-normal text-zinc-400">(evidence removed, not capability)</span>
+            WITHOUT {result.key} <span className="font-mono text-sm font-normal text-zinc-600 dark:text-zinc-400">(evidence removed, not capability)</span>
           </h3>
-          <p className="mt-1 text-sm text-zinc-500 dark:text-zinc-400">
+          <p className="mt-1 text-sm text-zinc-600 dark:text-zinc-400">
             These records lose {result.key} as evidence. The engineer is unchanged; the proof got thinner.
           </p>
           <dl className="mt-4 space-y-1.5 font-mono text-sm">
@@ -158,7 +158,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
               return (
                 <div key={coll} className="flex justify-between gap-2 border-t border-zinc-200 pt-1.5 dark:border-zinc-800">
                   <dt>{coll}</dt>
-                  <dd className={lost > 0 ? 'text-[#ff4d00]' : 'text-zinc-400 dark:text-zinc-500'}>
+                  <dd className={lost > 0 ? 'text-[#ff4d00]' : 'text-zinc-600 dark:text-zinc-400'}>
                     {before} → {after}{lost > 0 ? ` (−${lost})` : ''}
                   </dd>
                 </div>
@@ -167,7 +167,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
           </dl>
           {result.affected.length > 0 && (
             <div className="mt-4">
-              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-400 dark:text-zinc-500">affected evidence</h4>
+              <h4 className="font-mono text-[11px] uppercase tracking-[0.18em] text-zinc-600 dark:text-zinc-400">affected evidence</h4>
               <ul className="mt-1 space-y-0.5 font-mono text-[13px]">
                 {result.affected.map((a) => {
                   const rec = getById(a.collection as CollectionName, a.id);
@@ -182,10 +182,10 @@ export function ResultSurface({ result, lastQuery }: Props) {
               <ul className="mt-1 space-y-0.5 text-sm">
                 {result.orphanedDecisions.map((id) => {
                   const d = getById('decisions', id);
-                  return <li key={id}>{d ? titleOf('decisions', d) : id} <span className="font-mono text-[11px] text-zinc-400">({id})</span></li>;
+                  return <li key={id}>{d ? titleOf('decisions', d) : id} <span className="font-mono text-[11px] text-zinc-600 dark:text-zinc-400">({id})</span></li>;
                 })}
               </ul>
-              <p className="mt-2 text-sm text-zinc-500 dark:text-zinc-400">These decisions lost their only supporting evidence.</p>
+              <p className="mt-2 text-sm text-zinc-600 dark:text-zinc-400">These decisions lost their only supporting evidence.</p>
             </div>
           )}
         </div>

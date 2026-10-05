@@ -58,11 +58,11 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             spellCheck={false}
             autoComplete="off"
             placeholder='try: SHOW failures WHERE costDays > 14'
-            className="w-full bg-transparent py-3 font-mono text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-400 dark:placeholder:text-zinc-600 focus:outline-none"
+            className="w-full bg-transparent py-3 font-mono text-sm text-zinc-900 dark:text-zinc-100 placeholder:text-zinc-600 dark:placeholder:text-zinc-400 focus:outline-none"
           />
           <button
             type="submit"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-500 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             run
           </button>
@@ -71,7 +71,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             onClick={copyLink}
             disabled={!lastQuery}
             aria-label="Copy shareable link to this query"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-500 hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             {copied ? 'copied' : 'copy link'}
           </button>
@@ -85,7 +85,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             {parseError.suggestion ? ` · try: ${parseError.suggestion}` : ''}
           </p>
         ) : (
-          <p className="text-zinc-400 dark:text-zinc-600">
+          <p className="text-zinc-600 dark:text-zinc-400">
             grammar: SHOW ... WHERE ... ORDER BY ... LIMIT ... · SCHEMA · LOG · COMPARE a vs b · WITHOUT key
           </p>
         )}
@@ -96,7 +96,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             key={q}
             type="button"
             onClick={() => onRun(q)}
-            className="border border-zinc-200 px-2 py-1 font-mono text-xs text-zinc-500 hover:border-[#ff4d00] hover:text-[#ff4d00] dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="border border-zinc-200 px-2 py-1 font-mono text-xs text-zinc-600 hover:border-[#ff4d00] hover:text-[#ff4d00] dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             {q}
           </button>
