@@ -1,56 +1,179 @@
-import React, { useState, useEffect } from 'react';
-import Header from './components/Header';
-import Hero from './components/Hero';
-import About from './components/About';
-import Experience from './components/Experience';
-import Projects from './components/Projects';
-import Skills from './components/Skills';
-import Blog from './components/Blog';
-import Contact from './components/Contact';
-import { Analytics } from "@vercel/analytics/react"
+// App (F2): CAREER.DB shell. Identity rail, omnibar, results, inspector, index footer.
+// Concept #1 presentation components are deleted; the frozen engine is untouched.
+import { useEffect, useRef, useState } from 'react';
+import { Analytics } from '@vercel/analytics/react';
+import { db } from './db/dataset';
+import { STARTER_QUERIES } from './lib/starterQueries';
+import { useQueryEngine } from './hooks/useQueryEngine';
+import { useIstClock } from './hooks/useIstClock';
+import Grain from './components/Grain';
+import { Omnibar } from './components/Omnibar';
+import { ResultSurface } from './components/ResultSurface';
+import { Inspector } from './components/Inspector';
+import { RecruiterSheet } from './components/RecruiterSheet';
 
-function App() {
-  const [darkMode, setDarkMode] = useState(false);
-  // Use Analytics for tracking
+const BOOT_QUERY = 'SHOW highlights LIMIT 3';
+const FOOTER_INDEX = [
+  'Where you have worked',
+  'What you have shipped',
+  'Where you failed',
+  'What you believe',
+  'What survived contact with reality',
+  'Remove Python. Watch what breaks.',
+];
 
-  <Analytics />
+const BUILD_SHA: string =
+  (import.meta.env['VITE_BUILD_SHA'] as string | undefined) ?? 'dev';
+
+function useTheme(): [boolean, () => void] {
+  const [dark, setDark] = useState(true);
   useEffect(() => {
-    // Check for saved preference or system preference
-    const savedMode = localStorage.getItem('darkMode');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+    const stored = window.localStorage.getItem('theme');
+    setDark(stored ? stored === 'dark' : true);
+  }, []);
+  useEffect(() => {
+    document.documentElement.classList.toggle('dark', dark);
+    window.localStorage.setItem('theme', dark ? 'dark' : 'light');
+  }, [dark]);
+  return [dark, () => setDark((d) => !d)];
+}
 
-    if (savedMode !== null) {
-      setDarkMode(savedMode === 'true');
-    } else if (prefersDark) {
-      setDarkMode(true);
-    }
+export default function App() {
+  const [dark, toggleTheme] = useTheme();
+  const [input, setInput] = useState(BOOT_QUERY);
+  const [sheetOpen, setSheetOpen] = useState(false);
+  const [announcement, setAnnouncement] = useState('');
+  const recruiterBtnRef = useRef<HTMLButtonElement>(null);
+  const { state, run } = useQueryEngine(BOOT_QUERY);
+  const clock = useIstClock();
+  const recruiter = db.recruiter;
+
+  // Keep the input box in sync when a footer/example/URL query runs.
+  useEffect(() => {
+    if (state.lastQuery) setInput(state.lastQuery);
+  }, [state.lastQuery]);
+
+  const openSheet = () => {
+    setSheetOpen(true);
+    setAnnouncement('Recruiter summary opened.');
+  };
+  const closeSheet = () => {
+    setSheetOpen(false);
+    setAnnouncement('Recruiter summary closed.');
+  };
+
+  // Plain `R` toggles the recruiter sheet. Never fires while typing,
+  // and never with modifier keys (no hijacking browser shortcuts).
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if (e.key !== 'r' && e.key !== 'R') return;
+      if (e.ctrlKey || e.metaKey || e.altKey) return;
+      const t = e.target as HTMLElement | null;
+      if (t && (t.tagName === 'INPUT' || t.tagName === 'TEXTAREA' || t.isContentEditable)) return;
+      e.preventDefault();
+      setSheetOpen((open) => {
+        setAnnouncement(open ? 'Recruiter summary closed.' : 'Recruiter summary opened.');
+        return !open;
+      });
+    };
+    document.addEventListener('keydown', onKeyDown);
+    return () => document.removeEventListener('keydown', onKeyDown);
   }, []);
 
+  // When the sheet closes, return focus to the trigger (never on mount).
+  const wasOpenRef = useRef(false);
   useEffect(() => {
-    // Apply dark mode class to document
-    if (darkMode) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('darkMode', 'true');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('darkMode', 'false');
-    }
-  }, [darkMode]);
+    if (wasOpenRef.current && !sheetOpen) recruiterBtnRef.current?.focus();
+    wasOpenRef.current = sheetOpen;
+  }, [sheetOpen]);
+
+  const footerQueries = STARTER_QUERIES.filter((q) => FOOTER_INDEX.includes(q.label));
 
   return (
-    <div className="min-h-screen bg-light-bg dark:bg-dark-bg text-light-text dark:text-dark-text transition-colors duration-300">
-      <Header darkMode={darkMode} toggleDarkMode={() => setDarkMode(!darkMode)} />
-      <main>
-        <Hero />
-        <About />
-        <Experience />
-        <Projects />
-        <Skills />
-        <Blog />
-        <Contact />
+    <div className="min-h-dvh bg-paper font-body text-ink dark:bg-ink dark:text-paper">
+      <Grain />
+      <Analytics />
+      <div role="status" aria-live="polite" className="sr-only">
+        {announcement}
+      </div>
+      {sheetOpen && <RecruiterSheet recruiter={recruiter} onClose={closeSheet} />}
+
+      <header className="border-b border-zinc-200 dark:border-zinc-800">
+        <div className="mx-auto flex max-w-6xl items-baseline justify-between gap-4 px-4 py-3">
+          <div className="min-w-0">
+            <h1 className="truncate font-display text-base font-semibold tracking-tight">
+              {recruiter.name} <span className="font-mono text-xs font-normal text-zinc-600 dark:text-zinc-400">/ career.db</span>
+            </h1>
+            <p className="truncate text-[13px] text-zinc-600 dark:text-zinc-400">{recruiter.role}</p>
+          </div>
+          <div className="flex shrink-0 items-center gap-4 font-mono text-xs text-zinc-600 dark:text-zinc-400">
+            <span aria-label="Current time in India">{clock} IST</span>
+            <button
+              type="button"
+              ref={recruiterBtnRef}
+              onClick={openSheet}
+              aria-label="Open recruiter [R] summary"
+              className="border border-zinc-200 px-3 py-2 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
+            >
+              recruiter [R]
+            </button>
+            <button
+              type="button"
+              onClick={toggleTheme}
+              aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
+              className="border border-zinc-200 px-2 py-1 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
+            >
+              {dark ? 'light' : 'dark'}
+            </button>
+          </div>
+        </div>
+      </header>
+
+      <main className="mx-auto max-w-6xl px-4 py-4">
+        <Omnibar
+          input={input}
+          onInput={setInput}
+          onRun={run}
+          parseError={state.parseError}
+          lastQuery={state.lastQuery}
+        />
+        <div className="mt-4 grid grid-cols-1 gap-6 lg:grid-cols-[1fr_19rem]">
+          <div className="min-w-0">
+            <ResultSurface result={state.result} lastQuery={state.lastQuery} />
+          </div>
+          <Inspector plan={state.plan} result={state.result} lastQuery={state.lastQuery} />
+        </div>
       </main>
+
+      <footer className="border-t border-zinc-200 dark:border-zinc-800">
+        <div className="mx-auto max-w-6xl px-4 py-6">
+          <nav aria-label="Pre-saved queries">
+            <ul className="grid grid-cols-1 gap-1 sm:grid-cols-2">
+              {footerQueries.map((q) => (
+                <li key={q.label}>
+                  <button
+                    type="button"
+                    onClick={() => run(q.query)}
+                    className="w-full py-2 text-left text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00]"
+                  >
+                    <span className="font-display font-medium">{q.label}</span>
+                    <span className="ml-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">{q.query}</span>
+                  </button>
+                </li>
+              ))}
+            </ul>
+          </nav>
+          <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 pt-4 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
+            <a href={`mailto:${recruiter.contact.email}`} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">
+              {recruiter.contact.email}
+            </a>
+            <a href={recruiter.contact.github} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">github</a>
+            <a href={recruiter.contact.linkedin} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">linkedin</a>
+            <a href={recruiter.contact.resume} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">resume.pdf</a>
+            <span className="ml-auto">sha {BUILD_SHA}</span>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }
-
-export default App;
