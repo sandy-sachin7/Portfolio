@@ -1,6 +1,6 @@
 // useQueryEngine — F2. The only bridge between components and the frozen engine.
 // Components never import src/query or src/db directly (except id lookups).
-import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import { db } from '../db/dataset';
 import { buildIndexes, type DBIndexes } from '../db/indexes';
 import { parse, isParseError, type ParseError } from '../query/parser';
@@ -36,14 +36,19 @@ export function runQueryText(text: string, includeUnverified: boolean): {
 }
 
 export function useQueryEngine(bootQuery: string) {
-  const [state, setState] = useState<QueryState>({
-    input: bootQuery,
-    result: null,
-    plan: [],
-    parseError: null,
-    lastQuery: '',
+  // Boot synchronously (lazy initializer) so first paint already contains
+  // results. Booting in an effect would paint an empty surface, then grow it
+  // once the effect fires — a layout shift (mobile CLS 0.225 in F5 gate).
+  const [state, setState] = useState<QueryState>(() => {
+    const fromUrl =
+      typeof window !== 'undefined' ? decodeQueryUrl(window.location.hash) : null;
+    const first = (fromUrl ?? bootQuery).trim();
+    if (!first) {
+      return { input: bootQuery, result: null, plan: [], parseError: null, lastQuery: '' };
+    }
+    const { result, plan, parseError } = runQueryText(first, false);
+    return { input: first, result, plan, parseError, lastQuery: first };
   });
-  const booted = useRef(false);
 
   const run = useCallback((text: string, includeUnverified = false) => {
     const trimmed = text.trim();
@@ -53,19 +58,16 @@ export function useQueryEngine(bootQuery: string) {
     window.history.pushState(null, '', encodeQueryUrl(trimmed));
   }, []);
 
-  // Boot once: URL hash wins, else the starter query. Listens to back/forward.
+  // Boot already happened in the state initializer above. This effect only
+  // listens to back/forward navigation.
   useEffect(() => {
-    if (booted.current) return;
-    booted.current = true;
-    const fromUrl = decodeQueryUrl(window.location.hash);
-    run(fromUrl ?? bootQuery);
     const onHash = () => {
       const q = decodeQueryUrl(window.location.hash);
       if (q) run(q);
     };
     window.addEventListener('hashchange', onHash);
     return () => window.removeEventListener('hashchange', onHash);
-  }, [bootQuery, run]);
+  }, [run]);
 
   const api = useMemo(() => ({ state, run }), [state, run]);
   return api;

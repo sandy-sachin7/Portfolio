@@ -73,7 +73,7 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
             data-autofocus
             onClick={onClose}
             aria-label="Close recruiter summary and return to the query interface"
-            className="shrink-0 border border-zinc-300 px-3 py-2 font-mono text-sm text-zinc-600 hover:border-[#ff4d00] hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00]"
+            className="shrink-0 border border-zinc-300 px-3 py-2 font-mono text-sm text-zinc-600 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-700 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00]"
           >
             close [esc]
           </button>
@@ -102,7 +102,7 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
               {p.url ? (
                 <a
                   href={p.url}
-                  className="font-display font-medium hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+                  className="font-display font-medium hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
                 >
                   {p.name}
                 </a>
@@ -135,25 +135,25 @@ export function RecruiterSheet({ recruiter, onClose }: Props) {
         <div className="mt-2 flex flex-wrap gap-x-5 gap-y-2 text-sm">
           <a
             href={`mailto:${recruiter.contact.email}`}
-            className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             {recruiter.contact.email}
           </a>
           <a
             href={recruiter.contact.github}
-            className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             github
           </a>
           <a
             href={recruiter.contact.linkedin}
-            className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             linkedin
           </a>
           <a
             href={recruiter.contact.resume}
-            className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             resume.pdf
           </a>

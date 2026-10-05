@@ -112,8 +112,8 @@ export default function App() {
               type="button"
               ref={recruiterBtnRef}
               onClick={openSheet}
-              aria-label="Open recruiter summary (keyboard shortcut R)"
-              className="border border-zinc-200 px-3 py-2 hover:border-[#ff4d00] hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
+              aria-label="Open recruiter [R] summary"
+              className="border border-zinc-200 px-3 py-2 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
             >
               recruiter [R]
             </button>
@@ -121,7 +121,7 @@ export default function App() {
               type="button"
               onClick={toggleTheme}
               aria-label={dark ? 'Switch to light mode' : 'Switch to dark mode'}
-              className="border border-zinc-200 px-2 py-1 hover:border-[#ff4d00] hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
+              className="border border-zinc-200 px-2 py-1 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:border-zinc-800"
             >
               {dark ? 'light' : 'dark'}
             </button>
@@ -154,7 +154,7 @@ export default function App() {
                   <button
                     type="button"
                     onClick={() => run(q.query)}
-                    className="w-full py-2 text-left text-sm text-zinc-600 hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00]"
+                    className="w-full py-2 text-left text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00]"
                   >
                     <span className="font-display font-medium">{q.label}</span>
                     <span className="ml-2 font-mono text-xs text-zinc-600 dark:text-zinc-400">{q.query}</span>
@@ -164,12 +164,12 @@ export default function App() {
             </ul>
           </nav>
           <div className="mt-4 flex flex-wrap items-center gap-x-4 gap-y-1 border-t border-zinc-200 pt-4 font-mono text-xs text-zinc-600 dark:border-zinc-800 dark:text-zinc-400">
-            <a href={`mailto:${recruiter.contact.email}`} className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">
+            <a href={`mailto:${recruiter.contact.email}`} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">
               {recruiter.contact.email}
             </a>
-            <a href={recruiter.contact.github} className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">github</a>
-            <a href={recruiter.contact.linkedin} className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">linkedin</a>
-            <a href={recruiter.contact.resume} className="hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">resume.pdf</a>
+            <a href={recruiter.contact.github} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">github</a>
+            <a href={recruiter.contact.linkedin} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">linkedin</a>
+            <a href={recruiter.contact.resume} className="hover:text-[#9a3412] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]">resume.pdf</a>
             <span className="ml-auto">sha {BUILD_SHA}</span>
           </div>
         </div>

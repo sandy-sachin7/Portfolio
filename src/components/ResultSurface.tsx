@@ -91,7 +91,7 @@ export function ResultSurface({ result, lastQuery }: Props) {
         <button
           type="button"
           onClick={() => setOpenId(null)}
-          className="px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+          className="px-4 py-3 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
         >
           ← back to {result.kind === 'rows' ? `${result.rows.length} rows` : 'results'}
         </button>

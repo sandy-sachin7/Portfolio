@@ -62,7 +62,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
           />
           <button
             type="submit"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             run
           </button>
@@ -71,7 +71,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             onClick={copyLink}
             disabled={!lastQuery}
             aria-label="Copy shareable link to this query"
-            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="shrink-0 px-4 font-mono text-sm text-zinc-600 hover:text-[#9a3412] dark:hover:text-[#ff4d00] disabled:opacity-30 dark:text-zinc-400 dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             {copied ? 'copied' : 'copy link'}
           </button>
@@ -96,7 +96,7 @@ export function Omnibar({ input, onInput, onRun, parseError, lastQuery }: Props)
             key={q}
             type="button"
             onClick={() => onRun(q)}
-            className="border border-zinc-200 px-2 py-1 font-mono text-xs text-zinc-600 hover:border-[#ff4d00] hover:text-[#ff4d00] dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
+            className="border border-zinc-200 px-2 py-1 font-mono text-xs text-zinc-600 hover:border-[#ff4d00] hover:text-[#9a3412] dark:hover:text-[#ff4d00] dark:border-zinc-800 dark:text-zinc-400 dark:hover:border-[#ff4d00] dark:hover:text-[#ff4d00] focus-visible:outline-2 focus-visible:outline-[#ff4d00]"
           >
             {q}
           </button>
